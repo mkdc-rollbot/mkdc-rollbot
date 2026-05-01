@@ -1,5 +1,4 @@
-from system.system_base import RolePlayingSystem
-from system.dnd5e import Dnd5e
+from system_base import RolePlayingSystem
 from collections import namedtuple
 
 import discord
@@ -8,7 +7,7 @@ import logging
 
 Command = namedtuple('Command', ['description', 'function'])
 
-SYSTEMS = {'Dnd5e': Dnd5e}
+SYSTEMS = system_base.get_systems()
 
 
 def initialize_logger():
@@ -23,6 +22,7 @@ def initialize_logger():
     return logger
 
 
+# TODO: This needs to be a DB strucutre for Channels DB.
 class Channel:
     """
     Encapsulates information on a given discord channel.
@@ -33,8 +33,8 @@ class Channel:
     def __init__(self, channel: discord.TextChannel, prefix: str, system: RolePlayingSystem, guild_id: int, channel_id: int):
         self._channel = channel
         self.prefix = prefix
-        self.system = system
-        self.characters = dict()
+        self.system = system # Should be system identifier
+        self.characters = dict() # Looked up via Channel Participants DB
         self._guild_id = guild_id
         self._channel_id = channel_id
 
@@ -57,7 +57,7 @@ class Channel:
 
 class DiscordBot:
     def __init__(self):
-        self._guilds: dict[str: dict[str: Channel]] = dict()
+        self._guilds: dict[str: dict[str: Channel]] = dict() # TODO: Refactor into DB
         self._logger = initialize_logger()
         self._commands: dict[str: Command] = {
             'prefix': Command(f'Changes assigned prefix. default is {Channel.DEFAULT_PREFIX}.', self.set_prefix),
@@ -66,7 +66,7 @@ class DiscordBot:
             'character': Command('Create character sheet', self.character),
             'my_character': Command('Print your character sheet', self.my_character),
             'check': Command('Performs a skill check', self.check)
-        }
+            } # TODO: Cleanup here
         self._initialize_client()
 
     def _initialize_client(self):

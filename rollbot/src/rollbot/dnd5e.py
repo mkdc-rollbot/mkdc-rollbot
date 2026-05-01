@@ -94,6 +94,7 @@ SKILLS = {
 }
 
 
+# TODO: Refactor into DnD5E Characters DB
 class Dnd5ECharacterSheet(CharacterSheet):
     def __init__(self, name: str, level: int, stat_scores: list[int], proficiencies: list[str], expertise: list[str] = None):
         assert len(stat_scores) == len(STATS) and all([1 <= stat <= 20 for stat in stat_scores])
