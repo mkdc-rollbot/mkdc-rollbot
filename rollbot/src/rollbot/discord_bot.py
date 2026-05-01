@@ -1,5 +1,5 @@
-from rollbot.system.system_base import RolePlayingSystem
-from rollbot.system.dnd5e import Dnd5e
+from system.system_base import RolePlayingSystem
+from system.dnd5e import Dnd5e
 from collections import namedtuple
 
 import discord

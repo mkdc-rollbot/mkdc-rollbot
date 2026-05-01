@@ -1,4 +1,4 @@
-from .discord_bot import DiscordBot
+from discord_bot import DiscordBot
 
 
 def main():
