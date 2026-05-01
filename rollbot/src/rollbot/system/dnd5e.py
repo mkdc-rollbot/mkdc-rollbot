@@ -1,4 +1,4 @@
-from rollbot.system.system_base import CharacterSheet, RolePlayingSystem, Die, roll_die
+from system.system_base import CharacterSheet, RolePlayingSystem, Die, roll_die
 from enum import Enum, Flag, auto
 
 import re
