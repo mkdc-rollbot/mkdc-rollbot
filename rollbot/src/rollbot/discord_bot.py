@@ -184,7 +184,7 @@ class DiscordBot:
 
     async def check(self, channel_settings: Channel, parsed_message: list[str], author: str):
         character = channel_settings.characters[author]
-        roll = channel_settings.system.check(character, *parsed_message)
+        roll = channel_settings.system.parse(character, *parsed_message)
         await channel_settings.send(f'You rolled {roll}')
 
     async def help_str(self, channel_settings: Channel, *_):

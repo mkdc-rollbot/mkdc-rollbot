@@ -145,7 +145,7 @@ class Dnd5e(RolePlayingSystem):
             raise ValueError(f'Got unknown Dnd5eCheckMod: {check_mod}')
 
     @staticmethod
-    def roll(desc: str) -> int:
+    def parse(desc: str) -> int:
         processed_desc = re.match(DICE_ROLL_REGEX, desc)
         if not processed_desc:
             raise ValueError(f"Bad dice roll description {desc}")

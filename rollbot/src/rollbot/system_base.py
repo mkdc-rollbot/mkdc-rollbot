@@ -26,7 +26,7 @@ class RolePlayingSystem(ABC):
         ...
 
     @abstractmethod
-    def check(self, *args):
+    def parse(self, *args):
         ...
 
     @abstractmethod
