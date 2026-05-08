@@ -1,4 +1,4 @@
-from db.models import Character
+from src.db.models import Character
 
-def get_channel(session, character_id):
+def get_character(session, character_id):
     return session.get(Character, character_id)

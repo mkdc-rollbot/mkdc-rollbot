@@ -1,4 +1,6 @@
-from system_base import RolePlayingSystem
+from src.db.session import SessionLocal
+from src.db.repositories.guilds import get_or_create_guild
+from src.db.repositories.channels import get_or_create_channel
 from collections import namedtuple
 
 import discord
@@ -7,7 +9,7 @@ import logging
 
 Command = namedtuple('Command', ['description', 'function'])
 
-SYSTEMS = system_base.get_systems()
+SYSTEMS = {'dnd5e': None}
 
 
 def initialize_logger():
@@ -30,7 +32,7 @@ class Channel:
     DEFAULT_PREFIX = '~'
     DEFAULT_SYSTEM = None
 
-    def __init__(self, channel: discord.TextChannel, prefix: str, system: RolePlayingSystem, guild_id: int, channel_id: int):
+    def __init__(self, channel: discord.TextChannel, prefix: str, system: str, guild_id: int, channel_id: int):
         self._channel = channel
         self.prefix = prefix
         self.system = system # Should be system identifier
@@ -57,7 +59,6 @@ class Channel:
 
 class DiscordBot:
     def __init__(self):
-        self._guilds: dict[str: dict[str: Channel]] = dict() # TODO: Refactor into DB
         self._logger = initialize_logger()
         self._commands: dict[str: Command] = {
             'prefix': Command(f'Changes assigned prefix. default is {Channel.DEFAULT_PREFIX}.', self.set_prefix),
@@ -101,45 +102,33 @@ class DiscordBot:
         """
         message_metadata = message.to_message_reference_dict()
         guild_id, channel_id = message_metadata['guild_id'], message_metadata['channel_id']
-        channel_settings = self._validate_channel(guild_id, channel_id, message.channel)
+        channel, prefix = self._validate_channel(guild_id, channel_id, message.channel)
 
         # If message is not a rollbot command, stop message handling.
-        if not message.content.startswith(channel_settings.prefix):
+        if not message.content.startswith(prefix):
             return
 
         # Handle message
-        parsed_message = message.content[len(channel_settings.prefix):].split(' ')
+        parsed_message = message.content[len(prefix):].split(' ')
         author = message.author
         command_key = parsed_message.pop(0)
         command = self._commands.get(command_key)
         if not command:
             raise ValueError(f'Unknown command \"{command_key}\"')
-        await command.function(channel_settings, parsed_message, author)
+        await command.function(channel, parsed_message, author)
 
     def _validate_channel(self, guild_id: int, channel_id: int, channel_obj: discord.TextChannel):
-        # Ensure the message comes from a known channel
-        if guild_id not in self._guilds.keys():
-            # Handle joining a guild
-            self.join_guild(guild_id, channel_id, channel_obj)
-        elif channel_id not in self._guilds[guild_id].keys():
-            # Handle joining a new channel in an existing server
-            self.join_channel(guild_id, channel_id, channel_obj)
-        return self._guilds[guild_id][channel_id]
-
-    def join_guild(self, guild_id: int, channel_id: int, channel: discord.TextChannel):
-        """
-        Adds a guild to the list of known guilds, as well as adding a channel.
-        """
-        self._guilds[guild_id] = dict()
-        self._logger.info(f'Entered new guild with id {guild_id}')
-        self.join_channel(guild_id, channel_id, channel)
-
-    def join_channel(self, guild_id: int, channel_id: int, channel: discord.TextChannel):
-        """
-        Initializes the default settings for a new channel.
-        """
-        self._guilds[guild_id][channel_id] = Channel.default_channel(guild_id, channel_id, channel)
-        self._logger.info(f'Entered new channel in guild {guild_id} with id {channel_id}')
+        channel = None
+        with SessionLocal() as session:
+            guild = get_or_create_guild(session, guild_id)
+            if not any(c.id == channel_id for c in guild.channels):
+                # Handle joining a new channel in an existing server
+                channel = get_or_create_channel(session, guild_id, channel_id)
+            else:
+                channel = [c for c in guild.channels if c.id == channel_id][0]
+            prefix = channel.prefix
+        channel = self._client.get_channel(channel_id)
+        return channel, prefix
 
     def run(self, token):
         """

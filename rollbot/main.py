@@ -1,8 +1,8 @@
-from discord_bot import DiscordBot
+from src.rollbot.discord_bot import DiscordBot
 
 
 def main():
-    with open("../token.txt", "r") as f:
+    with open("src/token.txt", "r") as f:
         token = f.readlines()[0]
     bot = DiscordBot()
     bot.run(token=token)

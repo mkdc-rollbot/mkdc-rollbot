@@ -19,7 +19,7 @@ class Channel(Base):
     system = Column(String)
 
     channel_characters = relationship("ChannelCharacter", back_populates="channel")
-    guild = relationship("Guild", back_populate("channels"))
+    guild = relationship("Guild", back_populates="channels")
 
 class Player(Base):
     __tablename__ = "players"
