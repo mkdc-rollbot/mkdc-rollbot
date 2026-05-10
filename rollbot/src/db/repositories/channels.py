@@ -11,7 +11,6 @@ def get_or_create_channel(session, guild_id, channel_id):
         guild = Guild(id=guild_id)
         session.add(guild)
 
-
     channel = get_channel(session, channel_id)
 
     if not channel:
@@ -22,6 +21,5 @@ def get_or_create_channel(session, guild_id, channel_id):
             system=None
         )
         session.add(channel)
-        session.commit()
 
     return channel

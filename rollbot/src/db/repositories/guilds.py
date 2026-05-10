@@ -7,7 +7,6 @@ def get_or_create_guild(session, guild_id):
         guild = Guild(id=guild_id)
 
         session.add(guild)
-        session.commit()
 
     return guild
 

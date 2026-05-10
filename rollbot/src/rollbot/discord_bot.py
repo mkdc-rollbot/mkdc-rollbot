@@ -122,12 +122,9 @@ class DiscordBot:
         channel = None
         with SessionLocal() as session:
             guild = get_or_create_guild(session, guild_id)
-            if not any(c.id == channel_id for c in guild.channels):
-                # Handle joining a new channel in an existing server
-                channel = get_or_create_channel(session, guild_id, channel_id)
-            else:
-                channel = [c for c in guild.channels if c.id == channel_id][0]
+            channel = get_or_create_channel(session, guild_id, channel_id)
             prefix = channel.prefix
+            session.commit()
         channel = self._client.get_channel(channel_id)
         return channel, prefix
 

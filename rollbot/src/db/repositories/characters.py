@@ -11,5 +11,4 @@ def create_character(session, player_id, name,  sheet_data: dict):
             )
     
     session.add(character)
-    session.commit()
     return character
