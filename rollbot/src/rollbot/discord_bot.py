@@ -1,6 +1,7 @@
 from src.db.session import SessionLocal
 from src.db.repositories.guilds import get_or_create_guild
 from src.db.repositories.channels import get_or_create_channel
+from src.db.repositories.characters import create_character
 from collections import namedtuple
 
 import discord
@@ -163,9 +164,11 @@ class DiscordBot:
         except AssertionError:
             await channel_settings.send('Can\'t create character before selecting a roleplaying system.')
             return
-        channel_settings.characters[author] = channel_settings.system.character_sheet(parsed_message)
+        character_sheet, name = channel_settings.system.character_sheet(parsed_message)
+        with SessionLocal() as session:
+            create_character(session, author, name, character_sheet)
         self._logger.info(f'Created character for {author}.')
-        await channel_settings.send(f'{author}, your character is {channel_settings.characters[author].name}')
+        await channel_settings.send(f'{author}, your character is {name}')
 
     async def my_character(self, channel_settings: Channel, parsed_message: list[str], author: str):
         character = channel_settings.characters[author]

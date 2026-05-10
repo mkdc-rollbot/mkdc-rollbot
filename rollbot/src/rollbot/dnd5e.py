@@ -158,7 +158,7 @@ class Dnd5e(RolePlayingSystem):
 
         return roll_sum
 
-    def character_sheet(self, args_list: list[str]) -> Dnd5ECharacterSheet:
+    def character_sheet(self, args_list: list[str]) -> Dnd5ECharacterSheet, str:
         name = args_list.pop(0)
         level = int(args_list.pop(0))
         stats = [int(stat) for stat in args_list[0:len(STATS)]]
@@ -166,7 +166,7 @@ class Dnd5e(RolePlayingSystem):
         expertise = None
         if self.EXP in args_list:
             expertise = args_list[args_list.index(self.EXP)+1:]
-        return Dnd5ECharacterSheet(name, level, stats, proficiencies, expertise)
+        return Dnd5ECharacterSheet(name, level, stats, proficiencies, expertise), name
 
     def __str__(self) -> str:
         return 'Dungeons and Dragons 5th Edition'

@@ -22,7 +22,7 @@ class RolePlayingSystem(ABC):
     This class encapsulates role-playing systems: Character sheets structure and Check handling.
     """
     @abstractmethod
-    def character_sheet(self, args_list: list[str]) -> CharacterSheet:
+    def character_sheet(self, args_list: list[str]) -> CharacterSheet, str:
         ...
 
     @abstractmethod
