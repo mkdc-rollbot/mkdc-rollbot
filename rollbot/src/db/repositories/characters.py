@@ -6,7 +6,7 @@ def get_character(session, character_id):
 def create_character(session, player_id, name,  sheet_data: dict):
     character = Character(
             player_id=player_id,
-            name=name
+            name=name,
             sheet_data=sheet_data
             )
     

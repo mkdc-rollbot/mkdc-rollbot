@@ -1,9 +1,12 @@
+import os
+
+from dotenv import load_dotenv
 from src.rollbot.discord_bot import DiscordBot
 
 
 def main():
-    with open("src/token.txt", "r") as f:
-        token = f.readlines()[0]
+    load_dotenv()
+    token = os.getenv('DISCORD_TOKEN')
     bot = DiscordBot()
     bot.run(token=token)
 
