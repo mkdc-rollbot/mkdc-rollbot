@@ -1,1 +1,3 @@
-rollbot/.env
+*.env
+*.pyc
+*.db
