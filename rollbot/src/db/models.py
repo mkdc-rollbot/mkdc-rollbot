@@ -38,17 +38,36 @@ class Character(Base):
     player = relationship("Player", back_populates="characters")
 
     channel_links = relationship("ChannelCharacter", back_populates="character")
+    variants = relationship("CharacterVariant", back_populates="character")
 
+
+class CharacterVariant(Base):
+    __tablename__ = "character_variants"
+    id = Column(Integer, primary_key=True)
+    character_id = Columm(Integer, ForeignKey("characters.id"))
+    diff_data = Column(JSON)
+
+    character = relationship("Character", back_populates="variants")
+    channel_links = relationship("ChannelCharacter", back_populates="variant")
 
 class ChannelCharacter(Base):
     __tablename__ = "channel_characters"
+    __table_args__ = (
+        UniqueConstraint(
+            "channel_id",
+            "player_id",
+            name="uq_channel_player"
+        ),
+    )
     id = Column(Integer, primary_key=True)
     channel_id = Column(BigInteger, ForeignKey("channels.id"))
     player_id = Column(BigInteger, ForeignKey("players.id"))
     character_id = Column(Integer, ForeignKey("characters.id"))
+    variant_id = Column(Integer, ForeignKey("character_varaints.id"))
 
     channel = relationship("Channel", back_populates="channel_characters")
     character = relationship("Character", back_populates="channel_links")
     player = relationship("Player")
+    variant = relationship("CharacterVariant", back_populates="channel_links")
 
     joined_at = Column(DateTime)
