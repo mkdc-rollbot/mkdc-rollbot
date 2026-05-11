@@ -183,6 +183,7 @@ class DiscordBot:
         except AssertionError:
             await channel_settings.send('Can\'t create character before selecting a roleplaying system.')
             return
+
         character_sheet, name = channel_settings.system.character_sheet(parsed_message)
         with SessionLocal() as session:
             create_character(session, author, name, character_sheet)
