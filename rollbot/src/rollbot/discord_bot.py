@@ -1,12 +1,13 @@
+import discord
+import logging
+
+from collections import namedtuple
+
 from src.db.session import SessionLocal
 from src.db.models import Channel as ChannelModel
 from src.db.repositories.guilds import get_or_create_guild
-from src.db.repositories.channels import get_or_create_channel
+from src.db.repositories.channels import get_or_create_channel, update_channel_settings
 from src.db.repositories.characters import create_character
-from collections import namedtuple
-
-import discord
-import logging
 
 
 Command = namedtuple('Command', ['description', 'function'])
@@ -69,6 +70,10 @@ class ChannelSettings:
 
     def send(self, *args, **kwargs):
         return self._channel.send(*args, **kwargs)
+
+    def update(self, session):
+        update_channel_settings(session, self._channel_id, self.prefix, self.system)
+        session.commit()
 
 
 class DiscordBot:
@@ -154,6 +159,8 @@ class DiscordBot:
         prefix = parsed_message[0]
         self._logger.info(f'Changing prefix of {channel_settings} to {prefix}')
         channel_settings.prefix = prefix
+        with SessionLocal() as session:
+            channel_settings.update(session)
         await channel_settings.send(f'Changed prefix to {prefix}')
 
     async def set_system(self, channel_settings: ChannelSettings, parsed_message: list[str], _):
@@ -163,6 +170,8 @@ class DiscordBot:
         system_key = parsed_message[0]
         channel_settings.system = SYSTEMS[system_key]()
         self._logger.info(f'{channel_settings} is set for {system_key}.')
+        with SessionLocal() as session:
+            channel_settings.update(session)
         await channel_settings.send(f'This is now a {system_key} channel.')
 
     async def character(self, channel_settings: ChannelSettings, parsed_message: list[str], author: str):

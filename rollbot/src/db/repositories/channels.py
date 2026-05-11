@@ -23,3 +23,20 @@ def get_or_create_channel(session, guild_id, channel_id):
         session.add(channel)
 
     return channel
+
+def update_channel_settings(session, channel_id: int, prefix: str | None = None, system: str | None = None):
+
+    channel = session.get(Channel, channel_id)
+
+    if not channel:
+        raise ValueError(f"Channel {channel_id} does not exist")
+
+    if prefix is not None:
+        channel.prefix = prefix
+
+    if system is not None:
+        channel.system = system
+
+    session.add(channel)
+
+    return channel
