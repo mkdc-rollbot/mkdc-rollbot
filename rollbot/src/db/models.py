@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, BigInteger, ForeignKey, JSON, DateTime
+from sqlalchemy import Column, Integer, String, BigInteger, ForeignKey, JSON, DateTime, UniqueConstraint
 from sqlalchemy.orm import declarative_base, relationship
 
 Base = declarative_base()
@@ -44,7 +44,7 @@ class Character(Base):
 class CharacterVariant(Base):
     __tablename__ = "character_variants"
     id = Column(Integer, primary_key=True)
-    character_id = Columm(Integer, ForeignKey("characters.id"))
+    character_id = Column(Integer, ForeignKey("characters.id"))
     diff_data = Column(JSON)
 
     character = relationship("Character", back_populates="variants")
@@ -63,7 +63,7 @@ class ChannelCharacter(Base):
     channel_id = Column(BigInteger, ForeignKey("channels.id"))
     player_id = Column(BigInteger, ForeignKey("players.id"))
     character_id = Column(Integer, ForeignKey("characters.id"))
-    variant_id = Column(Integer, ForeignKey("character_varaints.id"))
+    variant_id = Column(Integer, ForeignKey("character_variants.id"))
 
     channel = relationship("Channel", back_populates="channel_characters")
     character = relationship("Character", back_populates="channel_links")

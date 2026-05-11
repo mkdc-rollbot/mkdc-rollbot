@@ -1,3 +1,4 @@
+import src.db.models
 from src.db.models import Base
 from src.db.session import engine
 
