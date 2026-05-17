@@ -7,7 +7,7 @@ from src.rollbot.dummy_system import DummySystem
 from src.db.session import SessionLocal
 from src.db.models import Channel as ChannelModel
 from src.db.repositories.guilds import get_or_create_guild
-from src.db.repositories.channels import get_or_create_channel, update_channel_settings
+from src.db.repositories.channels import get_or_create_channel, update_channel_settings, get_channel
 from src.db.repositories.characters import create_character as create_character_db
 from src.db.repositories.characters import set_character_to_channel, get_character
 from src.db.repositories.players import get_or_create_player
@@ -206,13 +206,22 @@ class DiscordBot:
 
         await channel_settings.send(f'{author}, your character is {name}')
 
-    async def my_character(self, channel_settings: ChannelSettings, parsed_message: list[str], author):
+    def get_player_character(self, channel_settings, author):
+        with SessionLocal() as session:
+            channel_db = get_channel(session, channel_settings.id)
+            channel_character = [character for character in channel_db.channel_characters if character.player.id == author.id][0]
+            character = channel_character.character.sheet_data
+        return character
 
+
+    async def my_character(self, channel_settings: ChannelSettings, parsed_message: list[str], author):
+        character = self.get_player_character(channel_settings, author)
         await channel_settings.send(character)
 
     async def check(self, channel_settings: ChannelSettings, parsed_message: list[str], author: str):
-        character = channel_settings.characters[author]
-        roll = channel_settings.system.parse(character, *parsed_message)
+        character = self.get_player_character(channel_settings, author)
+        system = SYSTEMS[channel_settings.system]
+        roll = system().parse(character, *parsed_message)
         await channel_settings.send(f'You rolled {roll}')
 
     async def help_str(self, channel_settings: ChannelSettings, *_):
