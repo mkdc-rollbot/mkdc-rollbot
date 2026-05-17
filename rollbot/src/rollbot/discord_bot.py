@@ -3,16 +3,18 @@ import logging
 
 from collections import namedtuple
 
+from src.rollbot.dummy_system import DummySystem
 from src.db.session import SessionLocal
 from src.db.models import Channel as ChannelModel
 from src.db.repositories.guilds import get_or_create_guild
 from src.db.repositories.channels import get_or_create_channel, update_channel_settings
-from src.db.repositories.characters import create_character
-
+from src.db.repositories.characters import create_character as create_character_db
+from src.db.repositories.characters import set_character_to_channel, get_character
+from src.db.repositories.players import get_or_create_player
 
 Command = namedtuple('Command', ['description', 'function'])
 
-SYSTEMS = {'dnd5e': None}
+SYSTEMS = {'dnd5e': None, 'dummy': DummySystem}
 
 
 def initialize_logger():
@@ -72,8 +74,12 @@ class ChannelSettings:
         return self._channel.send(*args, **kwargs)
 
     def update(self, session):
-        update_channel_settings(session, self._channel_id, self.prefix, self.system)
+        update_channel_settings(session, self._channel_id, self.prefix, self.system.key())
         session.commit()
+
+    @property
+    def id(self):
+        return self._channel_id
 
 
 class DiscordBot:
@@ -83,7 +89,7 @@ class DiscordBot:
             'prefix': Command(f'Changes assigned prefix. default is {ChannelSettings.DEFAULT_PREFIX}.', self.set_prefix),
             'help': Command('Get available commands.', self.help_str),
             'system': Command(f'Set the roleplaying system for this channel. Available systems are: {"\n\t".join(SYSTEMS.keys())}', self.set_system),
-            'character': Command('Create character sheet', self.character),
+            'character': Command('Create character sheet', self.create_character),
             'my_character': Command('Print your character sheet', self.my_character),
             'check': Command('Performs a skill check', self.check)
             }
@@ -168,13 +174,15 @@ class DiscordBot:
         Sets the roleplaying system for given channel.
         """
         system_key = parsed_message[0]
+        if system_key not in SYSTEMS.keys():
+            raise ValueError(f'No such system {system_key}')
         channel_settings.system = SYSTEMS[system_key]()
         self._logger.info(f'{channel_settings} is set for {system_key}.')
         with SessionLocal() as session:
             channel_settings.update(session)
         await channel_settings.send(f'This is now a {system_key} channel.')
 
-    async def character(self, channel_settings: ChannelSettings, parsed_message: list[str], author: str):
+    async def create_character(self, channel_settings: ChannelSettings, parsed_message: list[str], author):
         """
         Creates a character sheet for a player
         """
@@ -184,14 +192,22 @@ class DiscordBot:
             await channel_settings.send('Can\'t create character before selecting a roleplaying system.')
             return
 
-        character_sheet, name = channel_settings.system.character_sheet(parsed_message)
+        # Have the system module parse the message into a character sheet.
+        system = SYSTEMS[channel_settings.system]
+        author_id = author.id
+        character_sheet, name = system().character_sheet(parsed_message)
         with SessionLocal() as session:
-            create_character(session, author, name, character_sheet)
-        self._logger.info(f'Created character for {author}.')
+            player_db = get_or_create_player(session, author_id)
+            character_db = create_character_db(session, author_id, name, character_sheet)
+            self._logger.info(f'Created character for {author}.')
+            char_id = character_db.id
+            set_character_to_channel(session, char_id, channel_settings.id)
+            session.commit()
+
         await channel_settings.send(f'{author}, your character is {name}')
 
-    async def my_character(self, channel_settings: ChannelSettings, parsed_message: list[str], author: str):
-        character = channel_settings.characters[author]
+    async def my_character(self, channel_settings: ChannelSettings, parsed_message: list[str], author):
+
         await channel_settings.send(character)
 
     async def check(self, channel_settings: ChannelSettings, parsed_message: list[str], author: str):

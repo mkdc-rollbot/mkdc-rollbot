@@ -5,7 +5,8 @@ from src.db.models import Character, ChannelCharacter, CharacterVariant
 def get_character(session, character_id):
     return session.get(Character, character_id)
 
-def create_character(session, player_id, name,  sheet_data: dict):
+def create_character(session, player_id, name,  character_sheet):
+    sheet_data = character_sheet.toJson()
     character = Character(
             player_id=player_id,
             name=name,
@@ -13,9 +14,12 @@ def create_character(session, player_id, name,  sheet_data: dict):
             )
 
     session.add(character)
+    session.commit()
     return character
 
-def set_character_to_channel(session, character_id, channel_id, variant_id):
+def set_character_to_channel(session, character_id, channel_id, variant_id=None):
+    if not character_id:
+        raise ValueError(f'No ID given.')
     character = session.get(Character, character_id)
     if not character:
         raise ValueError(f'No character with id {character_id}')
