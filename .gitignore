@@ -1,1 +1,3 @@
-/rollbot/token.txt
+*.env
+*.pyc
+*.db

@@ -94,6 +94,7 @@ SKILLS = {
 }
 
 
+# TODO: Refactor into DnD5E Characters DB
 class Dnd5ECharacterSheet(CharacterSheet):
     def __init__(self, name: str, level: int, stat_scores: list[int], proficiencies: list[str], expertise: list[str] = None):
         assert len(stat_scores) == len(STATS) and all([1 <= stat <= 20 for stat in stat_scores])
@@ -144,7 +145,7 @@ class Dnd5e(RolePlayingSystem):
             raise ValueError(f'Got unknown Dnd5eCheckMod: {check_mod}')
 
     @staticmethod
-    def roll(desc: str) -> int:
+    def parse(desc: str) -> int:
         processed_desc = re.match(DICE_ROLL_REGEX, desc)
         if not processed_desc:
             raise ValueError(f"Bad dice roll description {desc}")
@@ -157,7 +158,7 @@ class Dnd5e(RolePlayingSystem):
 
         return roll_sum
 
-    def character_sheet(self, args_list: list[str]) -> Dnd5ECharacterSheet:
+    def character_sheet(self, args_list: list[str]) -> Dnd5ECharacterSheet, str:
         name = args_list.pop(0)
         level = int(args_list.pop(0))
         stats = [int(stat) for stat in args_list[0:len(STATS)]]
@@ -165,7 +166,7 @@ class Dnd5e(RolePlayingSystem):
         expertise = None
         if self.EXP in args_list:
             expertise = args_list[args_list.index(self.EXP)+1:]
-        return Dnd5ECharacterSheet(name, level, stats, proficiencies, expertise)
+        return Dnd5ECharacterSheet(name, level, stats, proficiencies, expertise), name
 
     def __str__(self) -> str:
         return 'Dungeons and Dragons 5th Edition'

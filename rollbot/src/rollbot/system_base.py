@@ -14,7 +14,9 @@ class CharacterSheet(ABC):
     """
     This class encapsulates character sheets.
     """
-    ...
+    @abstractmethod
+    def toJson(self):
+        ...
 
 
 class RolePlayingSystem(ABC):
@@ -22,13 +24,17 @@ class RolePlayingSystem(ABC):
     This class encapsulates role-playing systems: Character sheets structure and Check handling.
     """
     @abstractmethod
-    def character_sheet(self, args_list: list[str]) -> CharacterSheet:
+    def character_sheet(self, args_list: list[str]) -> (CharacterSheet, str):
         ...
 
     @abstractmethod
-    def check(self, *args):
+    def parse(self, *args):
         ...
 
     @abstractmethod
     def __str__(self) -> str:
+        ...
+
+    @abstractmethod
+    def key(self) ->str:
         ...
