@@ -1,15 +1,16 @@
 import logging
+import uvicorn
 
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
-from src.db.session import SessionLocal
-from src.db.models import Channel as ChannelModel
-from src.db.repositories.guilds import get_or_create_guild
-from src.db.repositories.channels import get_or_create_channel, update_channel_settings, get_channel
-from src.db.repositories.characters import create_character as create_character_db
-from src.db.repositories.characters import set_character_to_channel, get_character
-from src.db.repositories.players import get_or_create_player
+from db.session import SessionLocal
+from db.models import Channel as ChannelModel
+from db.repositories.guilds import get_or_create_guild
+from db.repositories.channels import get_or_create_channel, update_channel_settings, get_channel
+from db.repositories.characters import create_character as create_character_db
+from db.repositories.characters import set_character_to_channel, get_character
+from db.repositories.players import get_or_create_player
 
 
 def initialize_logger():
@@ -33,10 +34,47 @@ async def lifespan(app: FastAPI):
     yield
     # On Teardown
 
+app = FastAPI(lifespan=lifespan)
+
+
+@app.post("/channel/")
+async def create_guild_and_channel(
+        guild_id: str,
+        channel_id: str
+        ):
+    with SessionLocal() as session:
+        guild = get_or_create_guild(session, guild_id)
+        channel = get_or_create_channel(session, guild_id, channel_id)
+        session.commit()
+    return {'channel_id': channel_id}
+
+@app.post("/character/")
+async def create_character(author_id,
+                           name,
+                           character_sheet,
+                           channel_id
+                           ):
+    with SessionLocal() as session:
+        player_db = get_or_create_player(session, author_id)
+        character_db = create_character_db(session, author_id, name, character_sheet)
+        self._logger.info(f'Created character for {author}.')
+        char_id = character_db.id
+        set_character_to_channel(session, char_id, channel_settings.id)
+        session.commit()
+    return {"status": "OK", "character_id": char_id}
+
+
+
 
 @app.get("/")
 async def root():
     return {"status": "OK"}
 
 
-app = FastAPI(lifespan=lifespan)
+
+# Entry Point
+
+if __name__ == '__main__':
+    uvicorn.run('service:app',
+                reload=True,
+                port=11037)

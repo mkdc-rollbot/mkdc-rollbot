@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from src.db.models import Character, ChannelCharacter, CharacterVariant
+from db.models import Character, ChannelCharacter, CharacterVariant
 
 def get_character(session, character_id):
     return session.get(Character, character_id)
