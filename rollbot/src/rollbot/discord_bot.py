@@ -150,8 +150,9 @@ class DiscordBot:
 
     async def _validate_channel(self, guild_id: int, channel_id: int, channel_obj: discord.TextChannel):
         # Add API call using API client
-        response = await self._api_client.validate_guild_and_channel(guild_id, channel_id)
-        print(response)
+        channel_data = await self._api_client.validate_guild_and_channel(guild_id, channel_id)
+        channel_settings = ChannelSettings(**channel_data)
+        # Now how do I get channel settings?
         text_channel = self._discord_client.get_channel(channel_id)
         channel_settings.set_channel(text_channel)
         return channel_settings

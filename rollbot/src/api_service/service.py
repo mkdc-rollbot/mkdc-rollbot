@@ -4,6 +4,8 @@ import uvicorn
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
+from models import CharacterPayload, ChannelPayload
+
 from db.session import SessionLocal
 from db.models import Channel as ChannelModel
 from db.repositories.guilds import get_or_create_guild
@@ -38,15 +40,20 @@ app = FastAPI(lifespan=lifespan)
 
 
 @app.post("/channel/")
-async def create_guild_and_channel(
-        guild_id: str,
-        channel_id: str
-        ):
+async def create_guild_and_channel(channel_payload: ChannelPayload):
+    guild_id = channel_payload.guild_id
+    channel_id = channel_payload.channel_id
     with SessionLocal() as session:
         guild = get_or_create_guild(session, guild_id)
         channel = get_or_create_channel(session, guild_id, channel_id)
+        channel_data = {
+                'channel_id': channel.id,
+                'guild_id': channel.guild_id,
+                'system': channel.system,
+                'prefix': channel.prefix
+                }
         session.commit()
-    return {'channel_id': channel_id}
+    return channel_data
 
 @app.post("/character/")
 async def create_character(author_id,

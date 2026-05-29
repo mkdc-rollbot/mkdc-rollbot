@@ -1,4 +1,4 @@
-import requests
+import httpx
 
 from typing import Final
 
@@ -10,9 +10,11 @@ class APIClient:
         ...
 
     async def validate_guild_and_channel(self, guild_id, channel_id):
-        response = await requests.post(f'{API_URL}/channel/', json={'guild_id': guild_id, 'channel_id': channel_id})
-        return repsonse
+        async with httpx.AsyncClient() as client:
+            response = await client.post(f'{API_URL}/channel/', json={'guild_id': str(guild_id), 'channel_id': str(channel_id)})
+        return response.json()
 
     async def create_character(self, author_id, name, character_sheet, channel_id):
-        response = await requests.post(f'{API_URL}/character/', json={'author_id': author_id, 'name': name, 'character_sheet': character_sheet, 'channel_id': channel_id})
+        async with httpx.AsyncClient() as client:
+            response = await client.post(f'{API_URL}/character/', json={'author_id': author_id, 'name': name, 'character_sheet': character_sheet, 'channel_id': channel_id})
         return response.character_id
