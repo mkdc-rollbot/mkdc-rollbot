@@ -18,7 +18,7 @@ SYSTEMS = {'dnd5e': None, 'dummy': DummySystem}
 
 
 def initialize_logger():
-    logger = logging.getLogger('rollbot')
+    logger = logging.getLogger('discord_client')
     logger.setLevel(logging.INFO)
     formatter = logging.Formatter('%(levelname)s : %(name)s : %(message)s')
 
