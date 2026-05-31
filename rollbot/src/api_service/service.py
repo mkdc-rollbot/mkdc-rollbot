@@ -43,6 +43,7 @@ app = FastAPI(lifespan=lifespan)
 async def create_guild_and_channel(channel_payload: ChannelPayload):
     guild_id = channel_payload.guild_id
     channel_id = channel_payload.channel_id
+    app.state.logger.info(f'Validating {channel_id} in {guild_id}')
     with SessionLocal() as session:
         guild = get_or_create_guild(session, guild_id)
         channel = get_or_create_channel(session, guild_id, channel_id)
