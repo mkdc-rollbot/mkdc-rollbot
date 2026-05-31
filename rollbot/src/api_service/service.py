@@ -62,6 +62,7 @@ async def create_character(character_payload: CharacterPayload):
     name = character_payload.name
     character_sheet = character_payload.character_sheet
     channel_id = character_payload.channel_id
+    app.state.logger.info(f'Creating character: {name}')
     with SessionLocal() as session:
         player_db = get_or_create_player(session, author_id)
         character_db = create_character_db(session, author_id, name, character_sheet)
@@ -77,6 +78,7 @@ async def update_channel(channel_payload: ChannelSettingsPayload):
     channel_id = channel_payload.channel_id
     prefix = channel_payload.prefix
     system = channel_payload.system
+    app.state.logger.info(f'Changing settings in {channel_id} to prefix {prefix} and/or system {system}') 
     with SessionLocal() as session:
         update_channel_settings(session, channel_id, prefix, system)
         session.commit()

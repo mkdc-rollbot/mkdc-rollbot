@@ -23,3 +23,8 @@ class APIClient:
         async with httpx.AsyncClient() as client:
             response = await client.put(f'{API_URL}/channel/', json={'channel_id': channel_id, 'prefix': prefix, 'system': system})
         return response.json()
+
+    async def get_characters_for_channel(self, channel_id):
+        async with httpx.AsyncClient() as client:
+            response = await client.get(f'{API_URL}/characters/', json={})
+        return response.json()
