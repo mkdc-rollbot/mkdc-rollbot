@@ -3,15 +3,11 @@ import logging
 
 from collections import namedtuple
 
+from src.rollbot.channel_settings import ChannelSettings
 from src.rollbot.api_client import APIClient
 from src.rollbot.dummy_system import DummySystem
 # from src.api_service.db.session import SessionLocal
-# from src.api_service.db.models import Channel as ChannelModel
-# from src.api_service.db.repositories.guilds import get_or_create_guild
-# from src.api_service.db.repositories.channels import get_or_create_channel, update_channel_settings, get_channel
-# from src.api_service.db.repositories.characters import create_character as create_character_db
-# from src.api_service.db.repositories.characters import set_character_to_channel, get_character
-# from src.api_service.db.repositories.players import get_or_create_player
+# from src.api_service.db.repositories.channels import update_channel_settings, get_channel
 
 Command = namedtuple('Command', ['description', 'function'])
 
@@ -28,63 +24,6 @@ def initialize_logger():
     logger.addHandler(stream_handler)
 
     return logger
-
-
-class ChannelSettings:
-    """
-    Encapsulates information on a given discord channel.
-    """
-    DEFAULT_PREFIX = '~'
-    DEFAULT_SYSTEM = None
-
-    def __init__(self, prefix: str, system: str, guild_id: int, channel_id: int):
-        self._channel = None
-        self.prefix = prefix
-        self.system = system
-        self.characters = dict()
-        self._guild_id = guild_id
-        self._channel_id = channel_id
-
-    @staticmethod
-    def default_channel(guild_id, channel_id, channel):
-        default = ChannelSettings(
-                prefix=ChannelSettings.DEFAULT_PREFIX,
-                system=ChannelSettings.DEFAULT_SYSTEM,
-                guild_id=guild_id,
-                channel_id=channel_id,
-                )
-        return default
-
-    @staticmethod
-    def from_db_model(db_channel):
-        channel = ChannelSettings(
-                prefix=db_channel.prefix,
-                system=db_channel.system,
-                guild_id=db_channel.guild_id,
-                channel_id=db_channel.id,
-                )
-
-        return channel
-
-    def set_channel(self, text_channel: discord.TextChannel):
-        self._channel = text_channel
-
-    def __repr__(self):
-        return f'Channel {self._channel.name} in guild {self._channel.guild.name}'
-
-    def send(self, *args, **kwargs):
-        if not self._channel:
-            raise ValueError
-        return self._channel.send(*args, **kwargs)
-
-    def update(self, session):
-        update_channel_settings(session, self._channel_id, self.prefix, self.system.key())
-        session.commit()
-
-    @property
-    def id(self):
-        return self._channel_id
-
 
 class DiscordBot:
     def __init__(self):
@@ -149,10 +88,8 @@ class DiscordBot:
         await command.function(channel, parsed_message, author)
 
     async def _validate_channel(self, guild_id: int, channel_id: int, channel_obj: discord.TextChannel):
-        # Add API call using API client
         channel_data = await self._api_client.validate_guild_and_channel(guild_id, channel_id)
         channel_settings = ChannelSettings(**channel_data)
-        # Now how do I get channel settings?
         text_channel = self._discord_client.get_channel(channel_id)
         channel_settings.set_channel(text_channel)
         return channel_settings
@@ -169,10 +106,9 @@ class DiscordBot:
         """
         prefix = parsed_message[0]
         self._logger.info(f'Changing prefix of {channel_settings} to {prefix}')
-        channel_settings.prefix = prefix
+        channel_id = str(channel_settings.id)
         # Send channel settings to api client for update
-        with SessionLocal() as session:
-            channel_settings.update(session)
+        await self._api_client.update_channel_settings(channel_id, prefix, None)
         await channel_settings.send(f'Changed prefix to {prefix}')
 
     async def set_system(self, channel_settings: ChannelSettings, parsed_message: list[str], _):
