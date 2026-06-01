@@ -49,6 +49,6 @@ class ChannelSettings:
 
     @property
     def id(self):
-        return str(self._channel_id)
+        return self._channel_id
 
 
