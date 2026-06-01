@@ -3,17 +3,18 @@ from typing import Any
 
 
 class ChannelPayload(BaseModel):
-    guild_id: str
-    channel_id: str
+    guild_id: int
+    channel_id: int
 
 
 class ChannelSettingsPayload(BaseModel):
-    channel_id: str
+    channel_id: int
     prefix: str | None
     system: str | None
 
+
 class CharacterPayload(BaseModel):
-    author_id: str
+    author_id: int
     name: str
-    character_sheet: dict[str, Any]
-    channel_id: str
+    character_sheet: dict
+    channel_id: int

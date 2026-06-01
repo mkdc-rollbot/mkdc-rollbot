@@ -66,9 +66,11 @@ async def create_character(character_payload: CharacterPayload):
     with SessionLocal() as session:
         player_db = get_or_create_player(session, author_id)
         character_db = create_character_db(session, author_id, name, character_sheet)
-        self._logger.info(f'Created character for {author}.')
+        session.commit()
+        app.state.logger.info(f'Created character for {author_id}.')
         char_id = character_db.id
-        set_character_to_channel(session, char_id, channel_settings.id)
+        set_character_to_channel(session, char_id, channel_id)
+        app.state.logger.info(f'Connected character to channel')
         session.commit()
     return {"status": "OK", "character_id": char_id}
 
@@ -88,8 +90,9 @@ async def update_channel(channel_payload: ChannelSettingsPayload):
 @app.get("/characters/{channel_id}")
 async def get_characters(channel_id: str):
     with SessionLocal() as session:
-        characters = get_channel_characters(session, channel_id)
-        session.commit()
+        db_characters = get_channel_characters(session, channel_id)
+        characters = [{"id": character.id, "player": character.player.id, "name": character.name, "sheet_data": character.sheet_data} for character in db_characters]
+    app.state.logger.info(characters)
     return characters
 
 

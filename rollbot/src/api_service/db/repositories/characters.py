@@ -15,11 +15,10 @@ def get_channel_characters(session, channel_id):
     return session.scalars(lookup_statement).all()
 
 def create_character(session, player_id, name,  character_sheet):
-    sheet_data = character_sheet.toJson()
     character = Character(
             player_id=player_id,
             name=name,
-            sheet_data=sheet_data
+            sheet_data=character_sheet
             )
 
     session.add(character)
@@ -47,6 +46,7 @@ def set_character_to_channel(session, character_id, channel_id, variant_id=None)
                 diff_data=dict(),
                 )
         session.add(variant)
+        session.commit()
         session.flush()
 
     # Delete possible existing connection

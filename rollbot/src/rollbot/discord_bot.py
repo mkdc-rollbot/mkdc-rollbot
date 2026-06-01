@@ -146,8 +146,8 @@ class DiscordBot:
         characters = await self._api_client.get_characters_for_channel(channel_settings.id)
         if not characters or all([len(c) == 0 for c in characters]):
             return None
-        author_character = [character for character in characters if character['player']['id'] == author.id][0]
-        character = author_character.character.sheet_data
+        author_character = [character for character in characters if character['player'] == author.id][0]
+        character = author_character['sheet_data']
         return character
 
 
