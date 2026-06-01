@@ -7,7 +7,7 @@ class DummyCharacterSheet(CharacterSheet):
         self.name = name
 
     def toJson(self):
-        return json.dumps(self, default=lambda o: o.__dict__)
+        return self.__dict__
 
 class DummySystem(RolePlayingSystem):
     def character_sheet(self, args_list: list[str]) -> (DummyCharacterSheet, str):

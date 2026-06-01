@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 
-from src.db.models import Base
+from db.models import Base
 
 load_dotenv()
 

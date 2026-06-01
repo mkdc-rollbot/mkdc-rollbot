@@ -1,4 +1,4 @@
-from src.db.models import Channel, Guild
+from db.models import Channel, Guild
 
 def get_channel(session, channel_id):
     return session.get(Channel, channel_id)
