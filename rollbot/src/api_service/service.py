@@ -11,7 +11,7 @@ from db.models import Channel as ChannelModel
 from db.repositories.guilds import get_or_create_guild
 from db.repositories.channels import get_or_create_channel, update_channel_settings, get_channel
 from db.repositories.characters import create_character as create_character_db
-from db.repositories.characters import set_character_to_channel, get_character
+from db.repositories.characters import set_character_to_channel, get_character, get_channel_characters
 from db.repositories.players import get_or_create_player
 
 
@@ -84,6 +84,13 @@ async def update_channel(channel_payload: ChannelSettingsPayload):
         session.commit()
     return {}
 
+
+@app.get("/characters/{channel_id}")
+async def get_characters(channel_id: str):
+    with SessionLocal() as session:
+        characters = get_channel_characters(session, channel_id)
+        session.commit()
+    return characters
 
 
 @app.get("/")

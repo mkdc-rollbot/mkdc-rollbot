@@ -16,8 +16,8 @@ class APIClient:
 
     async def create_character(self, author_id, name, character_sheet, channel_id):
         async with httpx.AsyncClient() as client:
-            response = await client.post(f'{API_URL}/character/', json={'author_id': author_id, 'name': name, 'character_sheet': character_sheet, 'channel_id': channel_id})
-        return response.character_id
+            response = await client.post(f'{API_URL}/character/', json={'author_id': author_id, 'name': name, 'character_sheet': character_sheet.toJson(), 'channel_id': channel_id})
+        return response.json()
 
     async def update_channel_settings(self, channel_id, prefix: str | None, system: str | None):
         async with httpx.AsyncClient() as client:
@@ -26,5 +26,5 @@ class APIClient:
 
     async def get_characters_for_channel(self, channel_id):
         async with httpx.AsyncClient() as client:
-            response = await client.get(f'{API_URL}/characters/', json={})
+            response = await client.get(f'{API_URL}/characters/{channel_id}')
         return response.json()

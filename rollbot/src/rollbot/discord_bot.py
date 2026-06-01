@@ -6,8 +6,6 @@ from collections import namedtuple
 from src.rollbot.channel_settings import ChannelSettings
 from src.rollbot.api_client import APIClient
 from src.rollbot.dummy_system import DummySystem
-# from src.api_service.db.session import SessionLocal
-# from src.api_service.db.repositories.channels import get_channel
 
 Command = namedtuple('Command', ['description', 'function'])
 
@@ -121,7 +119,9 @@ class DiscordBot:
         channel_settings.system = SYSTEMS[system_key]()
         self._logger.info(f'{channel_settings} is set for {system_key}.')
         # Send channel settings to api client for update
-        await self._api_client.upadte_channel_settings(channel_id, None, system_key)
+        channel_id = channel_settings.id
+        response = await self._api_client.update_channel_settings(channel_id, None, system_key)
+        self._logger.info(response)
         await channel_settings.send(f'This is now a {system_key} channel.')
 
     async def create_character(self, channel_settings: ChannelSettings, parsed_message: list[str], author):
@@ -139,19 +139,25 @@ class DiscordBot:
         author_id = author.id
         character_sheet, name = system().character_sheet(parsed_message)
         # Commit character to DB
-        character_id = await self._api_client.create_character(author_id, name, character_hseet, channel_settings.id)
+        character_id = await self._api_client.create_character(author_id, name, character_sheet, channel_settings.id)
         await channel_settings.send(f'{author}, your character is {name}')
 
-    def get_player_character(self, channel_settings, author):
-        characters = await self._api_client.get_characters_for_channel(channel_settings.is)
-        author_character = [character for character in characters if character.player.id == author.id][0]
+    async def get_player_character(self, channel_settings, author):
+        characters = await self._api_client.get_characters_for_channel(channel_settings.id)
+        if not characters or all([len(c) == 0 for c in characters]):
+            return None
+        author_character = [character for character in characters if character['player']['id'] == author.id][0]
         character = author_character.character.sheet_data
         return character
 
 
     async def my_character(self, channel_settings: ChannelSettings, parsed_message: list[str], author):
-        character = self.get_player_character(channel_settings, author)
-        await channel_settings.send(character)
+        character = await self.get_player_character(channel_settings, author)
+        if not character:
+            message = f'You don\'t have a character yet. Create one with {channel_settings.prefix}character.'
+        else:
+            message = character
+        await channel_settings.send(message)
 
     async def check(self, channel_settings: ChannelSettings, parsed_message: list[str], author: str):
         character = self.get_player_character(channel_settings, author)

@@ -1,9 +1,18 @@
 from datetime import datetime
+from sqlalchemy import select
 
 from db.models import Character, ChannelCharacter, CharacterVariant
 
 def get_character(session, character_id):
     return session.get(Character, character_id)
+
+def get_channel_characters(session, channel_id):
+    lookup_statement = (
+            select(Character).
+            join(ChannelCharacter).
+            where(ChannelCharacter.channel_id == channel_id)
+            )
+    return session.scalars(lookup_statement).all()
 
 def create_character(session, player_id, name,  character_sheet):
     sheet_data = character_sheet.toJson()
