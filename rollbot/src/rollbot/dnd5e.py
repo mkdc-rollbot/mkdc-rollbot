@@ -112,7 +112,7 @@ SCHEMA = {
     'name': str,
     'level': int,
     'stats': {stat: int for stat in STATS},
-    'skills': {skill: str for skill in SKILLS},
+    'skills': {skill: int for skill in SKILLS},
 }
 
 class Dnd5ECharacterVariant(CharacterVariant):
@@ -166,19 +166,31 @@ class Dnd5ECharacterSheet(CharacterSheet):
         assert skill in SKILLS.keys()
         return self._skills[skill].score(self.proficiency_modifier)
 
-    @staticmethod
-    def fromJson(json: str):
-        ...
+    @classmethod
+    def fromJson(cls, json: dict[str: Any]):
+        name = json['name']
+        level = json['level']
+        stats = []
+        for stat in json['stats']:
+            stats.append(json['stats'][stat])
+        skills = {}
+        for skill in json['skills']:
+            skills[skill] =int(json['skills'][skill])
+        proficiencies = [skill for skill, mod in skills.items() if mod & SkillModifier.PROFICIENCY.value]
+        expertise = [skill for skill, mod in skills.items() if mod & SkillModifier.EXPERTISE.value]
+        return cls(name, level, stats, proficiencies, expertise)
 
-    def apply_diff(variant: Dnd5ECharacterVariant):
+    def apply_diff(self, variant: Dnd5ECharacterVariant):
         if 'name' in variant:
             self.name = variant['name']
         if 'level' in variant:
             self.level = variant['level']
         if 'stats' in variant:
             for stat in variant['stats']:
-                self.stats[stat] = Stat(variant['stats'][stat])
-        # TODO: Skills.
+                self._stats[stat] = Stat(variant['stats'][stat])
+        if 'skills' in variant:
+            for skill in variant['skills']:
+                self._skills[skill].modifier = SkillModifier(int(variant['skills'][skill]))
 
     def __repr__(self):
         character_str: str = ''
@@ -186,6 +198,14 @@ class Dnd5ECharacterSheet(CharacterSheet):
         character_str += f'Level: {self.level}\n'
         character_str += f'Stats: {'\t\n'.join([f'{stat}: {s.score}' for stat, s in self._stats.items()])}'
         return character_str
+
+    def toJson(self):
+        json = {'name': self.name,
+                'level': self.level,
+                'stats': {name: stat.score for name, stat in self._stats.items()},
+                'skills': {name: skill.modifier.value for name, skill in self._skills.items()}
+                }
+        return json
 
 class Dnd5e(RolePlayingSystem):
     EXP = 'EXPERTISE'
