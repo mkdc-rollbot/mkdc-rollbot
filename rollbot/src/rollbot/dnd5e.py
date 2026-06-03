@@ -1,7 +1,20 @@
-from system.system_base import CharacterSheet, RolePlayingSystem, Die, roll_die
-from enum import Enum, Flag, auto
-
 import re
+
+from enum import Enum, Flag, auto
+from typing import Any
+
+from src.rollbot.system_base import CharacterSheet, RolePlayingSystem, CharacterVariant
+
+from collections import namedtuple
+from random import randint
+
+
+Die = namedtuple('Die', ['min', 'max'])
+
+
+def roll_die(die: Die) -> int:
+    return randint(*die)
+
 
 ############################################
 # CONSTANTS
@@ -33,7 +46,6 @@ DICE_ROLL_REGEX = r"(?P<Times>\d*)d(?P<Dice>4|6|8|10|12|20|%|100)"
 class SkillModifier(Flag):
     PROFICIENCY = auto()
     EXPERTISE = auto()
-
 
 class Dnd5eCheckMod(Enum):
     NONE = 0
@@ -93,8 +105,45 @@ SKILLS = {
     'survival': 'wis'
 }
 
+# =======================
+# CHARACTER SHEET SCHEMA
+# =======================
 
-# TODO: Refactor into DnD5E Characters DB
+SCHEMA = {
+    'name': str,
+    'level': int,
+    'stats': {stat: int for stat in STATS},
+    'skills': {skill: str for skill in SKILLS},
+}
+
+class Dnd5ECharacterVariant(CharacterVariant):
+    def validate_diffs(self, diffs: dict[str, Any]) -> bool:
+        if not diffs:
+            raise ValueError('Empty diff')
+        for key, value in diffs.items():
+            split_key = key.split('.')
+            schema = SCHEMA
+            for current_key in split_key:
+                if current_key not in schema.keys():
+                    raise KeyError(f'Key {current_key} in {key} is not part of the schema.')
+                schema = schema[current_key]
+            if not isinstance(value, schema):
+                raise ValueError(f'Value for {key} should be of type {schema}, got {type(value)}.')
+
+    def parse_diffs(self, diffs: dict[str, Any]):
+        parsed_diffs = {}
+        for key, value in diffs.items():
+            split_key = key.split('.')
+            current_diffs = parsed_diffs
+            for i, current_key in enumerate(split_key):
+                if current_key not in current_diffs.keys():
+                    current_diffs[current_key] = dict()
+                if i+1 != len(split_key):
+                    current_diffs = current_diffs[current_key]
+            current_diffs[current_key] = value
+        return parsed_diffs
+
+
 class Dnd5ECharacterSheet(CharacterSheet):
     def __init__(self, name: str, level: int, stat_scores: list[int], proficiencies: list[str], expertise: list[str] = None):
         assert len(stat_scores) == len(STATS) and all([1 <= stat <= 20 for stat in stat_scores])
@@ -158,7 +207,7 @@ class Dnd5e(RolePlayingSystem):
 
         return roll_sum
 
-    def character_sheet(self, args_list: list[str]) -> Dnd5ECharacterSheet, str:
+    def character_sheet(self, args_list: list[str]) -> (Dnd5ECharacterSheet, str):
         name = args_list.pop(0)
         level = int(args_list.pop(0))
         stats = [int(stat) for stat in args_list[0:len(STATS)]]
