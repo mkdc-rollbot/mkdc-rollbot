@@ -66,7 +66,7 @@ class Stat:
 
     @property
     def modifier(self) -> int:
-        return int((self.score - 10) / 2)
+        return int((self.score - 10) // 2)
 
 
 class Skill:
@@ -116,7 +116,7 @@ SCHEMA = {
 }
 
 class Dnd5ECharacterVariant(CharacterVariant):
-    def validate_diffs(self, diffs: dict[str, Any]) -> bool:
+    def validate_diffs(self, diffs: dict[str, Any]):
         if not diffs:
             raise ValueError('Empty diff')
         for key, value in diffs.items():
@@ -134,11 +134,10 @@ class Dnd5ECharacterVariant(CharacterVariant):
         for key, value in diffs.items():
             split_key = key.split('.')
             current_diffs = parsed_diffs
-            for i, current_key in enumerate(split_key):
+            for current_key in split_key[:-1]:
                 if current_key not in current_diffs.keys():
                     current_diffs[current_key] = dict()
-                if i+1 != len(split_key):
-                    current_diffs = current_diffs[current_key]
+                current_diffs = current_diffs[current_key]
             current_diffs[current_key] = value
         return parsed_diffs
 
