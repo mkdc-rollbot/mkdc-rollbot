@@ -22,6 +22,11 @@ class CharacterVariant(ABC):
     def parse_diffs(self, diffs: dict[str, Any]):
         ...
         
+    def __contains__(self, key):
+        return key in self._diffs.keys()
+
+    def __getitem__(self, key):
+        return self._diffs[key]
 
 class CharacterSheet(ABC):
     """

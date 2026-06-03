@@ -42,7 +42,6 @@ DICE_DICT = {
 
 DICE_ROLL_REGEX = r"(?P<Times>\d*)d(?P<Dice>4|6|8|10|12|20|%|100)"
 
-
 class SkillModifier(Flag):
     PROFICIENCY = auto()
     EXPERTISE = auto()
@@ -166,6 +165,20 @@ class Dnd5ECharacterSheet(CharacterSheet):
     def skill_score(self, skill):
         assert skill in SKILLS.keys()
         return self._skills[skill].score(self.proficiency_modifier)
+
+    @staticmethod
+    def fromJson(json: str):
+        ...
+
+    def apply_diff(variant: Dnd5ECharacterVariant):
+        if 'name' in variant:
+            self.name = variant['name']
+        if 'level' in variant:
+            self.level = variant['level']
+        if 'stats' in variant:
+            for stat in variant['stats']:
+                self.stats[stat] = Stat(variant['stats'][stat])
+        # TODO: Skills.
 
     def __repr__(self):
         character_str: str = ''
