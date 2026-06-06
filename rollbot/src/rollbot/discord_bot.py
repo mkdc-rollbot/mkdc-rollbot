@@ -154,7 +154,7 @@ class DiscordBot:
     async def my_character(self, channel_settings: ChannelSettings, parsed_message: list[str], author):
         character = await self.get_player_character(channel_settings, author)
         if not character:
-            message = f'You don\'t have a character yet. Create one with {channel_settings.prefix}character.'
+            message = f'You don\'t have a character yet. Create one with `{channel_settings.prefix}character.`'
         else:
             message = character
         await channel_settings.send(message)

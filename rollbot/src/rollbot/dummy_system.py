@@ -1,6 +1,6 @@
 import json
 
-from src.rollbot.system_base import CharacterSheet, RolePlayingSystem, Die, roll_die
+from src.rollbot.system_base import CharacterSheet, RolePlayingSystem
 
 class DummyCharacterSheet(CharacterSheet):
     def __init__(self, name):
