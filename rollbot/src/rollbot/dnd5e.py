@@ -1,7 +1,20 @@
-from system.system_base import CharacterSheet, RolePlayingSystem, Die, roll_die
-from enum import Enum, Flag, auto
-
 import re
+
+from enum import Enum, Flag, auto
+from typing import Any
+
+from src.rollbot.system_base import CharacterSheet, RolePlayingSystem, CharacterVariant
+
+from collections import namedtuple
+from random import randint
+
+
+Die = namedtuple('Die', ['min', 'max'])
+
+
+def roll_die(die: Die) -> int:
+    return randint(*die)
+
 
 ############################################
 # CONSTANTS
@@ -29,11 +42,9 @@ DICE_DICT = {
 
 DICE_ROLL_REGEX = r"(?P<Times>\d*)d(?P<Dice>4|6|8|10|12|20|%|100)"
 
-
 class SkillModifier(Flag):
     PROFICIENCY = auto()
     EXPERTISE = auto()
-
 
 class Dnd5eCheckMod(Enum):
     NONE = 0
@@ -55,7 +66,7 @@ class Stat:
 
     @property
     def modifier(self) -> int:
-        return int((self.score - 10) / 2)
+        return int((self.score - 10) // 2)
 
 
 class Skill:
@@ -93,8 +104,44 @@ SKILLS = {
     'survival': 'wis'
 }
 
+# =======================
+# CHARACTER SHEET SCHEMA
+# =======================
 
-# TODO: Refactor into DnD5E Characters DB
+SCHEMA = {
+    'name': str,
+    'level': int,
+    'stats': {stat: int for stat in STATS},
+    'skills': {skill: int for skill in SKILLS},
+}
+
+class Dnd5ECharacterVariant(CharacterVariant):
+    def validate_diffs(self, diffs: dict[str, Any]):
+        if not diffs:
+            raise ValueError('Empty diff')
+        for key, value in diffs.items():
+            split_key = key.split('.')
+            schema = SCHEMA
+            for current_key in split_key:
+                if current_key not in schema.keys():
+                    raise KeyError(f'Key {current_key} in {key} is not part of the schema.')
+                schema = schema[current_key]
+            if not isinstance(value, schema):
+                raise ValueError(f'Value for {key} should be of type {schema}, got {type(value)}.')
+
+    def parse_diffs(self, diffs: dict[str, Any]):
+        parsed_diffs = {}
+        for key, value in diffs.items():
+            split_key = key.split('.')
+            current_diffs = parsed_diffs
+            for current_key in split_key[:-1]:
+                if current_key not in current_diffs.keys():
+                    current_diffs[current_key] = dict()
+                current_diffs = current_diffs[current_key]
+            current_diffs[current_key] = value
+        return parsed_diffs
+
+
 class Dnd5ECharacterSheet(CharacterSheet):
     def __init__(self, name: str, level: int, stat_scores: list[int], proficiencies: list[str], expertise: list[str] = None):
         assert len(stat_scores) == len(STATS) and all([1 <= stat <= 20 for stat in stat_scores])
@@ -118,12 +165,46 @@ class Dnd5ECharacterSheet(CharacterSheet):
         assert skill in SKILLS.keys()
         return self._skills[skill].score(self.proficiency_modifier)
 
+    @classmethod
+    def fromJson(cls, json: dict[str: Any]):
+        name = json['name']
+        level = json['level']
+        stats = []
+        for stat in json['stats']:
+            stats.append(json['stats'][stat])
+        skills = {}
+        for skill in json['skills']:
+            skills[skill] =int(json['skills'][skill])
+        proficiencies = [skill for skill, mod in skills.items() if mod & SkillModifier.PROFICIENCY.value]
+        expertise = [skill for skill, mod in skills.items() if mod & SkillModifier.EXPERTISE.value]
+        return cls(name, level, stats, proficiencies, expertise)
+
+    def apply_diff(self, variant: Dnd5ECharacterVariant):
+        if 'name' in variant:
+            self.name = variant['name']
+        if 'level' in variant:
+            self.level = variant['level']
+        if 'stats' in variant:
+            for stat in variant['stats']:
+                self._stats[stat] = Stat(variant['stats'][stat])
+        if 'skills' in variant:
+            for skill in variant['skills']:
+                self._skills[skill].modifier = SkillModifier(int(variant['skills'][skill]))
+
     def __repr__(self):
         character_str: str = ''
         character_str += f'Name: {self.name}\n'
         character_str += f'Level: {self.level}\n'
         character_str += f'Stats: {'\t\n'.join([f'{stat}: {s.score}' for stat, s in self._stats.items()])}'
         return character_str
+
+    def toJson(self):
+        json = {'name': self.name,
+                'level': self.level,
+                'stats': {name: stat.score for name, stat in self._stats.items()},
+                'skills': {name: skill.modifier.value for name, skill in self._skills.items()}
+                }
+        return json
 
 class Dnd5e(RolePlayingSystem):
     EXP = 'EXPERTISE'
@@ -158,7 +239,7 @@ class Dnd5e(RolePlayingSystem):
 
         return roll_sum
 
-    def character_sheet(self, args_list: list[str]) -> Dnd5ECharacterSheet, str:
+    def character_sheet(self, args_list: list[str]) -> (Dnd5ECharacterSheet, str):
         name = args_list.pop(0)
         level = int(args_list.pop(0))
         stats = [int(stat) for stat in args_list[0:len(STATS)]]

@@ -3,7 +3,6 @@ from sqlalchemy.orm import declarative_base, relationship
 
 Base = declarative_base()
 
-
 class Guild(Base):
     __tablename__ = "guilds"
     id = Column(BigInteger, primary_key=True)
@@ -31,7 +30,7 @@ class Character(Base):
     __tablename__ = "characters"
     id = Column(Integer, primary_key=True)
     player_id = Column(BigInteger, ForeignKey("players.id"))
-
+    system = Column(String)
     name = Column(String)
     sheet_data = Column(JSON)
 

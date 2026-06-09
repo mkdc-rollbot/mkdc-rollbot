@@ -1,14 +1,32 @@
 from abc import ABC, abstractmethod
-from collections import namedtuple
-from random import randint
+from typing import Any
 
 
-Die = namedtuple('Die', ['min', 'max'])
+class CharacterVariant(ABC):
+    """
+    This class encapsulates changes to a character sheet to be applied
+    """
+    def __init__(self, diffs: dict[str: Any]):
+        self.validate_diffs(diffs)
+        self._diffs = self.parse_diffs(diffs)
 
+    @classmethod
+    def fromJson(cls, json: str):
+        return cls(json)
 
-def roll_die(die: Die) -> int:
-    return randint(*die)
+    @abstractmethod
+    def validate_diffs(self, diffs: dict[str, Any]):
+        ...
 
+    @abstractmethod
+    def parse_diffs(self, diffs: dict[str, Any]):
+        ...
+        
+    def __contains__(self, key):
+        return key in self._diffs.keys()
+
+    def __getitem__(self, key):
+        return self._diffs[key]
 
 class CharacterSheet(ABC):
     """
@@ -18,6 +36,14 @@ class CharacterSheet(ABC):
     def toJson(self):
         ...
 
+    @staticmethod
+    @abstractmethod
+    def fromJson(json: str):
+        ...
+
+    @abstractmethod
+    def apply_diff(variant: CharacterVariant):
+        ...
 
 class RolePlayingSystem(ABC):
     """
