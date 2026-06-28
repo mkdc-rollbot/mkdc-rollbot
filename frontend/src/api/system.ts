@@ -1,6 +1,6 @@
 import client from "./client";
 
-export interface HealthReponse{
+export interface HealthResponse{
   status: string;
 }
 

@@ -6,6 +6,6 @@ export async function getCharacters(): Promise<Character[]> {
     return data;
 }
 
-export async function deleteCharacter(id: number): primise<Void> {
+export async function deleteCharacter(id: number): Promise<void> {
   await client.delete(`/character/${id}`);
 }

@@ -1,9 +1,13 @@
 import httpx
+import os
 
+from dotenv import load_dotenv
 from typing import Final
 
-PORT: Final = 11037
-API_URL: Final = f'http://127.0.0.1:{PORT}'
+
+load_dotenv()
+
+API_URL = os.getenv("API_URL")
 
 class APIClient:
     def __init__(self):
