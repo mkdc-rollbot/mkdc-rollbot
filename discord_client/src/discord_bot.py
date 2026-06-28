@@ -3,9 +3,9 @@ import logging
 
 from collections import namedtuple
 
-from src.rollbot.channel_settings import ChannelSettings
-from src.rollbot.api_client import APIClient
-from src.rollbot.dummy_system import DummySystem
+from src.channel_settings import ChannelSettings
+from src.api_client import APIClient
+from src.dummy_system import DummySystem
 
 Command = namedtuple('Command', ['description', 'function'])
 

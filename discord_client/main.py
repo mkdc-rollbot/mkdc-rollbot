@@ -1,7 +1,7 @@
 import os
 
 from dotenv import load_dotenv
-from src.rollbot.discord_bot import DiscordBot
+from src.discord_bot import DiscordBot
 
 
 def main():

@@ -72,3 +72,13 @@ def set_character_to_channel(session, character_id, channel_id, variant_id=None)
 
     session.add(db_object)
     return db_object
+
+def delete_character(session, character_id):
+    character = session.get(Character, character_id)
+
+    if character is None:
+        return False
+
+    session.delete(character)
+
+    return True
