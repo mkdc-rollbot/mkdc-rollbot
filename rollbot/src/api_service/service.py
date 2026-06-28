@@ -11,7 +11,7 @@ from db.models import Channel as ChannelModel
 from db.repositories.guilds import get_or_create_guild
 from db.repositories.channels import get_or_create_channel, update_channel_settings, get_channel
 from db.repositories.characters import create_character as create_character_db
-from db.repositories.characters import set_character_to_channel, get_character, get_channel_characters
+from db.repositories.characters import set_character_to_channel, get_character, get_channel_characters, delete_character
 from db.repositories.players import get_or_create_player
 
 
@@ -95,6 +95,96 @@ async def get_characters(channel_id: str):
     app.state.logger.info(characters)
     return characters
 
+
+@app.get("/guilds")
+async def get_guilds():
+    with SessionLocal() as session:
+        guilds = session.query(GuildModel).all()
+
+        return [
+            {
+                "id": guild.id,
+                "channels": len(guild.channels)
+            }
+            for guild in guilds
+        ]
+
+@app.get("/channels")
+async def get_channels():
+    with SessionLocal() as session:
+        channels = session.query(ChannelModel).all()
+
+        return [
+            {
+                "id": channel.id,
+                "guild_id": channel.guild_id,
+                "prefix": channel.prefix,
+                "system": channel.system,
+                "character_count": len(channel.channel_characters)
+            }
+            for channel in channels
+        ]
+
+@app.get("/channel/{channel_id}")
+async def get_channel_data(channel_id: str):
+    with SessionLocal() as session:
+        channel = get_channel(session, channel_id)
+
+        if channel is None:
+            return {}
+
+        return {
+            "id": channel.id,
+            "guild_id": channel.guild_id,
+            "prefix": channel.prefix,
+            "system": channel.system,
+            "characters": [
+                {
+                    "id": link.character.id,
+                    "name": link.character.name,
+                    "player_id": link.player_id
+                }
+                for link in channel.channel_characters
+            ]
+        }
+
+@app.get("/character/{character_id}")
+async def get_character_data(character_id: int):
+    with SessionLocal() as session:
+        character = get_character(session, character_id)
+
+        if character is None:
+            return {}
+
+        return {
+            "id": character.id,
+            "player_id": character.player_id,
+            "name": character.name,
+            "system": character.system,
+            "sheet_data": character.sheet_data,
+            "channels": [
+                link.channel_id
+                for link in character.channel_links
+            ]
+        }
+
+@app.delete("/character/{character_id}")
+async def delete_character_endpoint(character_id: int):
+    with SessionLocal() as session:
+        success = delete_character(session, character_id)
+
+        if success:
+            session.commit()
+
+        return {
+            "deleted": success
+        }
+
+@app.get("/health")
+async def health():
+    return {
+        "status": "OK"
+    }
 
 @app.get("/")
 async def root():

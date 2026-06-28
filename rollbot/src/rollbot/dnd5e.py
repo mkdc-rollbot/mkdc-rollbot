@@ -1,7 +1,7 @@
 import re
 
 from enum import Enum, Flag, auto
-from typing import Any
+from typing import Any, Union
 
 from src.rollbot.system_base import CharacterSheet, RolePlayingSystem, CharacterVariant
 
@@ -15,32 +15,46 @@ Die = namedtuple('Die', ['min', 'max'])
 def roll_die(die: Die) -> int:
     return randint(*die)
 
+GenerateType = Union[
+    int,
+    tuple[int, int],
+    tuple[int, str],
+    tuple[int, int, str],
+]
+
+def generate_dice(to_generate: list[GenerateType]) -> dict[str, Die]:
+    dice_dict = {}
+    for die_data in to_generate:
+        match die_data:
+            case int() as max_val:
+                new_key = str(max_val)
+                new_val = Die(1, max_val)
+            case (min_val, max_val) if isinstance(min_val, int) and isinstance(max_val, int):
+                new_key = f'{min_val}-{max_val}'
+                new_val = Die(min_val, max_val)
+            case (max_val, name) if isinstance(max_val, int) and isinstance(name, str):
+                new_key = name
+                new_val = Die(1, max_val)
+            case (min_val, max_val, name) if isinstance(min_val, int) and isinstance(max_val, int) and isinstance(name, str):
+                new_key = name
+                new_val = Die(min_val, max_val)
+            case _:
+                raise ValueError
+        dice_dict[new_key] = new_val
+    return dice_dict
 
 ############################################
 # CONSTANTS
 ############################################
 
 # Define the Die struct and dice used in DnD
-d4 = Die(1, 4)
-d6 = Die(1, 6)
-d8 = Die(1, 8)
-d10 = Die(1, 10)
-d00 = Die(1, 100)
-d12 = Die(1, 12)
-d20 = Die(1, 20)
 
-DICE_DICT = {
-    '4': d4,
-    '6': d6,
-    '8': d8,
-    '10': d10,
-    '12': d12,
-    '20': d20,
-    '%': d00,
-    '100': d00
-}
+DND_DICE = [4, 6, 8, 10, (100, '%'), 12, 20]
+DICE_DICT = generate_dice(DND_DICE)
+CHECK_DIE = '20'
 
-DICE_ROLL_REGEX = r"(?P<Times>\d*)d(?P<Dice>4|6|8|10|12|20|%|100)"
+DICE_PATTERN = '|'.join(sorted(DICE_DICT.keys(), key=len, reverse=True))
+DICE_ROLL_REGEX = rf"(?P<Times>\d*)d(?P<Dice>{DICE_PATTERN})"
 
 class SkillModifier(Flag):
     PROFICIENCY = auto()
@@ -211,13 +225,12 @@ class Dnd5e(RolePlayingSystem):
 
     def check(self, character: Dnd5ECharacterSheet, skill: str, check_str: str = None) -> int:
         score = character.skill_score(skill)
-        roll_result = roll_die(d20) + score
-        check_mod: Dnd5eCheckMod = Dnd5eCheckMod.NONE
-        if check_str:
-            check_mod: Dnd5eCheckMod = CHECK_MODS.get(check_str, Dnd5eCheckMod.NONE)
+        roll_result = roll_die(DICE_DICT[CHECK_DIE]) + score
+        check_mod: Dnd5eCheckMod = CHECK_MODS.get(check_str, Dnd5eCheckMod.NONE) if check_str else Dnd5eCheckMod.NONE
         if check_mod == Dnd5eCheckMod.NONE:
             return roll_result
-        alt_roll = roll_die(d20) + score
+
+        alt_roll = roll_die(DICE_DICT[CHECK_DIE]) + score
         if check_mod == Dnd5eCheckMod.ADVANTAGE:
             return max(roll_result, alt_roll)
         elif check_mod == Dnd5eCheckMod.DISADVANTAGE:
