@@ -2,10 +2,6 @@ import os
 
 from dotenv import load_dotenv
 from src.discord_bot import DiscordBot
-from src.dnd5e import DICE_DICT, DICE_ROLL_REGEX
-
-print(DICE_DICT)
-print(DICE_ROLL_REGEX)
 
 
 def main():
