@@ -3,11 +3,15 @@ import uvicorn
 
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from models import CharacterPayload, ChannelPayload, ChannelSettingsPayload
 
 from db.session import SessionLocal
 from db.models import Channel as ChannelModel
+from db.models import Character as CharacterModel
+from db.models import Guild as GuildModel
+
 from db.repositories.guilds import get_or_create_guild
 from db.repositories.channels import get_or_create_channel, update_channel_settings, get_channel
 from db.repositories.characters import create_character as create_character_db
@@ -37,6 +41,16 @@ async def lifespan(app: FastAPI):
     # On Teardown
 
 app = FastAPI(lifespan=lifespan)
+
+app.add_middleware(
+        CORSMiddleware,
+        allow_origins=[
+            "http://localhost:5173",
+            ],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+        )
 
 
 @app.post("/channel/")
@@ -147,6 +161,21 @@ async def get_channel_data(channel_id: str):
                 for link in channel.channel_characters
             ]
         }
+
+@app.get("/characters")
+async def get_all_characters():
+    with SessionLocal() as session:
+        characters = session.query(CharacterModel).all()
+
+        return [
+            {
+                "id": c.id,
+                "player": c.player.id,
+                "name": c.name,
+                "sheet_data": c.sheet_data,
+            }
+            for c in characters
+        ]
 
 @app.get("/character/{character_id}")
 async def get_character_data(character_id: int):
