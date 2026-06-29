@@ -7,7 +7,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from models import CharacterPayload, ChannelPayload, ChannelSettingsPayload
 
-from db.session import SessionLocal
+from db.session import SessionLocal, engine
+from db.models import Base
 from db.models import Channel as ChannelModel
 from db.models import Character as CharacterModel
 from db.models import Guild as GuildModel
@@ -36,9 +37,14 @@ async def lifespan(app: FastAPI):
     # On Load
     logger = initialize_logger()
     app.state.logger = logger
-    app.state.logger.info('RollBot API Gate live.')
+
+    Base.metadata.create_all(bind=engine)
+    logger.info('Database live.')
+
+    logger.info('RollBot API Gate live.')
     yield
     # On Teardown
+    logger.info('Shutting down.')
 
 app = FastAPI(lifespan=lifespan)
 
@@ -218,12 +224,3 @@ async def health():
 @app.get("/")
 async def root():
     return {"status": "OK"}
-
-
-
-# Entry Point
-
-if __name__ == '__main__':
-    uvicorn.run('service:app',
-                reload=True,
-                port=11037)

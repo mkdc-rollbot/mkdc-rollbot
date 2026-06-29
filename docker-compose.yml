@@ -1,0 +1,79 @@
+services:
+  postgres:
+    image: postgres:17
+
+    container_name: rollbot-postgres
+
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_DB: rollbot
+      POSTGRES_USER: rollbot
+      POSTGRES_PASSWORD: rollbot
+
+    ports:
+      - "5433:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rollbot -d rollbot"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api_service:
+    build:
+      context: ./api_service
+
+    container_name: rollbot-api
+
+    restart: unless-stopped
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:11037/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+    environment:
+      DATABASE_URL: postgresql://rollbot:rollbot@postgres:5432/rollbot
+
+    ports:
+      - "11037:11037"
+
+  discord_client:
+    build:
+      context: ./discord_client
+
+    depends_on:
+      api_service:
+        condition: service_started
+
+    env_file:
+      - discord_client/.env
+
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: rollbot-frontend
+
+    ports:
+      - "5173:80"
+
+    depends_on:
+      api_service:
+        condition: service_healthy
+
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
