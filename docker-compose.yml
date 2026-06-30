@@ -6,10 +6,8 @@ services:
 
     restart: unless-stopped
 
-    environment:
-      POSTGRES_DB: rollbot
-      POSTGRES_USER: rollbot
-      POSTGRES_PASSWORD: rollbot
+    env_file:
+      - .env
 
     ports:
       - "5433:5432"
@@ -42,11 +40,8 @@ services:
       retries: 5
       start_period: 10s
 
-    environment:
-      DATABASE_URL: postgresql://rollbot:rollbot@postgres:5432/rollbot
-
-    ports:
-      - "11037:11037"
+    env_file:
+      - api_service/.env
 
   discord_client:
     build:
@@ -67,7 +62,7 @@ services:
     container_name: rollbot-frontend
 
     ports:
-      - "5173:80"
+      - "80:80"
 
     depends_on:
       api_service:
