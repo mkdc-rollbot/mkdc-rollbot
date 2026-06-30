@@ -86,6 +86,7 @@ Copy the required `.env` files from the development machine:
 scp .env ubuntu@<PUBLIC_IP>:~/mkdc-rollbot/
 scp api_service/.env ubuntu@<PUBLIC_IP>:~/mkdc-rollbot/api_service/
 scp discord_client/.env ubuntu@<PUBLIC_IP>:~/mkdc-rollbot/discord_client/
+scp frontend/.env.production ubuntu@<PUBLIC_IP>:~/mkdc-rollbot/discord_client/.env
 ```
 
 ---
