@@ -149,6 +149,7 @@ Provides:
 
 * Docker
 * Docker Compose
+* Nginx reverse proxy
 
 ## Future Infrastructure
 
