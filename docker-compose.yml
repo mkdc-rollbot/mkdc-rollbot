@@ -68,6 +68,9 @@ services:
       api_service:
         condition: service_healthy
 
+    env_file:
+      - frontend/.env
+
     restart: unless-stopped
 
 volumes:
