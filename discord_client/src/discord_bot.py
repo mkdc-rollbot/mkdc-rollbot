@@ -6,10 +6,11 @@ from collections import namedtuple
 from src.channel_settings import ChannelSettings
 from src.api_client import APIClient
 from src.dummy_system import DummySystem
+from src.dnd5e import Dnd5e
 
 Command = namedtuple('Command', ['description', 'function'])
 
-SYSTEMS = {'dnd5e': None, 'dummy': DummySystem}
+SYSTEMS = {'dnd5e': Dnd5e, 'dummy': DummySystem}
 
 
 def initialize_logger():

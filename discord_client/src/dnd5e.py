@@ -264,3 +264,6 @@ class Dnd5e(RolePlayingSystem):
 
     def __str__(self) -> str:
         return 'Dungeons and Dragons 5th Edition'
+
+    def key(self):
+        return 'dnd5e'
