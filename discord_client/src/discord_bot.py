@@ -5,12 +5,10 @@ from collections import namedtuple
 
 from src.channel_settings import ChannelSettings
 from src.api_client import APIClient
-from src.dummy_system import DummySystem
-from src.dnd5e import Dnd5e
 
 Command = namedtuple('Command', ['description', 'function'])
 
-SYSTEMS = {'dnd5e': Dnd5e, 'dummy': DummySystem}
+SYSTEMS = {'dnd5e': None, 'dummy': None}
 
 
 def initialize_logger():
@@ -30,7 +28,7 @@ class DiscordBot:
         self._commands: dict[str: Command] = {
             'prefix': Command(f'Changes assigned prefix. default is {ChannelSettings.DEFAULT_PREFIX}.', self.set_prefix),
             'help': Command('Get available commands.', self.help_str),
-            'system': Command(f'Set the roleplaying system for this channel. Available systems are: {"\n\t".join(SYSTEMS.keys())}', self.set_system),
+            'system': Command(f'Set the roleplaying system for this channel. Available systems are: {", ".join(SYSTEMS.keys())}', self.set_system),
             'character': Command('Create character sheet', self.create_character),
             'my_character': Command('Print your character sheet', self.my_character),
             'check': Command('Performs a skill check', self.check)
@@ -93,12 +91,6 @@ class DiscordBot:
         channel_settings.set_channel(text_channel)
         return channel_settings
 
-    def run(self, token):
-        """
-        Logs rollbot in.
-        """
-        self._discord_client.run(token)
-
     async def set_prefix(self, channel_settings: ChannelSettings, parsed_message: list[str], _):
         """
         Changes the message prefix for the given channel.
@@ -117,7 +109,7 @@ class DiscordBot:
         system_key = parsed_message[0]
         if system_key not in SYSTEMS.keys():
             raise ValueError(f'No such system {system_key}')
-        channel_settings.system = SYSTEMS[system_key]()
+        channel_settings.system =system_key
         self._logger.info(f'{channel_settings} is set for {system_key}.')
         # Send channel settings to api client for update
         channel_id = channel_settings.id
@@ -138,6 +130,7 @@ class DiscordBot:
         # Have the system module parse the message into a character sheet.
         system = SYSTEMS[channel_settings.system]
         author_id = author.id
+        # This should be replaced with an API call
         character_sheet, name = system().character_sheet(parsed_message)
         if not character_sheet or not name:
             await channel_settings.send('Failed to create character')
@@ -153,7 +146,6 @@ class DiscordBot:
         author_character = [character for character in characters if character['player'] == author.id][0]
         character = author_character['sheet_data']
         return character
-
 
     async def my_character(self, channel_settings: ChannelSettings, parsed_message: list[str], author):
         character = await self.get_player_character(channel_settings, author)
@@ -180,3 +172,9 @@ class DiscordBot:
             if function:
                 help_str += f'{command}: {function.description}\n'
         await channel_settings.send(help_str)
+
+    def run(self, token):
+        """
+        Logs rollbot in.
+        """
+        self._discord_client.run(token)

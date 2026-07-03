@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from models import CharacterPayload, ChannelPayload, ChannelSettingsPayload
+from src.models import CharacterPayload, ChannelPayload, ChannelSettingsPayload
 
 from db.session import SessionLocal, engine
 from db.models import Base
@@ -94,7 +94,6 @@ async def create_character(character_payload: CharacterPayload):
         session.commit()
     return {"status": "OK", "character_id": char_id}
 
-
 @app.put("/channel/")
 async def update_channel(channel_payload: ChannelSettingsPayload):
     channel_id = channel_payload.channel_id
@@ -106,7 +105,6 @@ async def update_channel(channel_payload: ChannelSettingsPayload):
         session.commit()
     return {}
 
-
 @app.get("/characters/{channel_id}")
 async def get_characters(channel_id: str):
     with SessionLocal() as session:
@@ -114,7 +112,6 @@ async def get_characters(channel_id: str):
         characters = [{"id": character.id, "player": character.player.id, "name": character.name, "sheet_data": character.sheet_data} for character in db_characters]
     app.state.logger.info(characters)
     return characters
-
 
 @app.get("/guilds")
 async def get_guilds():
@@ -220,6 +217,10 @@ async def health():
     return {
         "status": "OK"
     }
+
+@app.get("/check")
+async def check():
+    ...
 
 @app.get("/")
 async def root():
