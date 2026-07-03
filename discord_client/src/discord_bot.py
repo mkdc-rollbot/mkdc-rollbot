@@ -139,6 +139,9 @@ class DiscordBot:
         system = SYSTEMS[channel_settings.system]
         author_id = author.id
         character_sheet, name = system().character_sheet(parsed_message)
+        if not character_sheet or not name:
+            await channel_settings.send('Failed to create character')
+            return
         # Commit character to DB
         character_id = await self._api_client.create_character(author_id, name, character_sheet, channel_settings.id)
         await channel_settings.send(f'{author}, your character is {name}')
@@ -162,6 +165,8 @@ class DiscordBot:
 
     async def check(self, channel_settings: ChannelSettings, parsed_message: list[str], author: str):
         character = self.get_player_character(channel_settings, author)
+        if not character:
+            message = f'You don\'t have a character yet. Create one with `{channel_settings.prefix}character.`'
         system = SYSTEMS[channel_settings.system]
         roll = system().parse(character, *parsed_message)
         await channel_settings.send(f'You rolled {roll}')
