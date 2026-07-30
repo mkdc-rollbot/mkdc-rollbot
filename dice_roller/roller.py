@@ -1,12 +1,12 @@
 from random import randint
-from dice_roller.parser import RollCommand
+from parser import RollCommand
 
 def roll_die(command: RollCommand):
     roll_die = lambda: randint(1, command.dice_type)
     rolls = []
-    for _ in range(command.count):
+    for _ in range(command.dice_count):
         result = roll_die()
-        while result in command.reroll_list:
+        while result in command.reroll_on:
             result = roll_die()
         rolls.append(result)
 
