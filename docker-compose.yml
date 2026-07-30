@@ -43,13 +43,22 @@ services:
     env_file:
       - api_service/.env
 
+  dice_roll_service:
+    build:
+      context: ./dice_roller
+
+    container_name: dice-roller
+
+    ports:
+      - "11038:11038"
+
   discord_client:
     build:
       context: ./discord_client
 
     depends_on:
       api_service:
-        condition: service_started
+        condition: service_healthy
 
     env_file:
       - discord_client/.env

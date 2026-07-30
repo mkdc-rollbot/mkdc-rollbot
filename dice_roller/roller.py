@@ -1,7 +1,7 @@
 from random import randint
 from parser import RollCommand
 
-def roll_die(command: RollCommand):
+async def roll_die(command: RollCommand):
     roll_die = lambda: randint(1, command.dice_type)
     rolls = []
     for _ in range(command.dice_count):
@@ -17,4 +17,6 @@ def roll_die(command: RollCommand):
         kept_rolls = kept_rolls[:-command.keep_lowest]
 
     total = sum(kept_rolls) + command.add
-    return rolls, kept_rolls, total
+    return {"rolls": rolls,
+            "kept_rolls": kept_rolls,
+            "total": total}

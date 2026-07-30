@@ -3,7 +3,7 @@ import re
 from dataclasses import dataclass, field
 
 
-DICE_REGEX = r"(?P<count>\d+)d(?P<die>\d+)(r\[(?P<reroll_list>(\d+\,)*(\d))\])?(?P<keep>k[h|l]\d+)?(\+(?P<add>\d+))?"
+DICE_REGEX = r"(?P<count>\d+)d(?P<die>\d+)(r\((?P<reroll_list>(\d+\,)*(\d))\))?(?P<keep>k[h|l]\d+)?(\+(?P<add>\d+))?"
 
 @dataclass
 class RollCommand:
@@ -40,5 +40,5 @@ class RollCommand:
         if keep_highest > count or keep_lowest > count:
             raise ValueError(f"Invalid keep value {keep_highest if keep_highest else keep_lowest} for {count} rolls.")
 
-def parse_roll(roll_description: str) -> RollCommand:
+async def parse_roll(roll_description: str) -> RollCommand:
     return RollCommand.from_regex(roll_description)
