@@ -61,6 +61,7 @@ class DiscordBot:
                 self._logger.info(f'Couldn\'t handle message {message.content}: {e}')
                 await message.channel.send(f'Sorry, ran into an error: {e}')
 
+        # Discord and API clients
         self._discord_client = client
         self._api_client = APIClient()
 

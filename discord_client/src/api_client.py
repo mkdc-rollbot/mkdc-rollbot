@@ -10,6 +10,9 @@ load_dotenv()
 API_URL = os.getenv("API_URL")
 
 class APIClient:
+    """
+    Client to interact with the API service
+    """
     def __init__(self):
         ...
 

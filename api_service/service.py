@@ -5,7 +5,8 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from models import CharacterPayload, ChannelPayload, ChannelSettingsPayload
+from models import CharacterPayload, ChannelPayload, ChannelSettingsPayload, EnginePayload
+from registry import Registry, EngineRegistration
 
 from db.session import SessionLocal, engine
 from db.models import Base
@@ -40,6 +41,9 @@ async def lifespan(app: FastAPI):
 
     Base.metadata.create_all(bind=engine)
     logger.info('Database live.')
+
+    app.state.registry = Registry()
+    logger.info('Created engines registry')
 
     logger.info('RollBot API Gate live.')
     yield
@@ -214,6 +218,15 @@ async def delete_character_endpoint(character_id: int):
         return {
             "deleted": success
         }
+
+
+@app.post("/engines/register")
+async def register_engine(engine_payload: EnginePayload):
+    registration = EngineRegistration(engine_payload.ruleset, engine_payload.url, True)
+    app.state.registry.register(registration)
+    app.state.logger(f'Registered {engine_payload.ruleset} to url {engine_payload.url}')
+    return {"registered": True}
+
 
 @app.get("/health")
 async def health():

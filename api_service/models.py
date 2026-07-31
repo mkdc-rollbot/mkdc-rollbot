@@ -18,3 +18,8 @@ class CharacterPayload(BaseModel):
     name: str
     character_sheet: dict
     channel_id: int
+
+
+class EnginePayload(BaseModel):
+    ruleset: str
+    url: str

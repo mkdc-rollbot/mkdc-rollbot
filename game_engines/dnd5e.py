@@ -6,55 +6,12 @@ from typing import Any, Union
 from src.system_base import CharacterSheet, RolePlayingSystem, CharacterVariant
 
 from collections import namedtuple
-from random import randint
 
-
-Die = namedtuple('Die', ['min', 'max'])
-
-
-def roll_die(die: Die) -> int:
-    return randint(*die)
-
-GenerateType = Union[
-    int,
-    tuple[int, int],
-    tuple[int, str],
-    tuple[int, int, str],
-]
-
-def generate_dice(to_generate: list[GenerateType]) -> dict[str, Die]:
-    dice_dict = {}
-    for die_data in to_generate:
-        match die_data:
-            case int() as max_val:
-                new_key = str(max_val)
-                new_val = Die(1, max_val)
-            case (min_val, max_val) if isinstance(min_val, int) and isinstance(max_val, int):
-                new_key = f'{min_val}-{max_val}'
-                new_val = Die(min_val, max_val)
-            case (max_val, name) if isinstance(max_val, int) and isinstance(name, str):
-                new_key = name
-                new_val = Die(1, max_val)
-            case (min_val, max_val, name) if isinstance(min_val, int) and isinstance(max_val, int) and isinstance(name, str):
-                new_key = name
-                new_val = Die(min_val, max_val)
-            case _:
-                raise ValueError
-        dice_dict[new_key] = new_val
-    return dice_dict
 
 ############################################
 # CONSTANTS
 ############################################
 
-# Define the Die struct and dice used in DnD
-
-DND_DICE = [4, 6, 8, 10, (100, '%'), 12, 20]
-DICE_DICT = generate_dice(DND_DICE)
-CHECK_DIE = '20'
-
-DICE_PATTERN = '|'.join(sorted(DICE_DICT.keys(), key=len, reverse=True))
-DICE_ROLL_REGEX = rf"(?P<Times>\d*)d(?P<Dice>{DICE_PATTERN})"
 
 class SkillModifier(Flag):
     PROFICIENCY = auto()
