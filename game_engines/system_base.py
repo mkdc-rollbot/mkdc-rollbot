@@ -11,7 +11,7 @@ class CharacterVariant(ABC):
         self._diffs = self.parse_diffs(diffs)
 
     @classmethod
-    def fromJson(cls, json: str):
+    def from_json(cls, json: str):
         return cls(json)
 
     @abstractmethod
@@ -33,12 +33,12 @@ class CharacterSheet(ABC):
     This class encapsulates character sheets.
     """
     @abstractmethod
-    def toJson(self):
+    def to_json(self):
         ...
 
     @staticmethod
     @abstractmethod
-    def fromJson(json: str):
+    def from_json(json: str):
         ...
 
     @abstractmethod
