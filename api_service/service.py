@@ -220,12 +220,18 @@ async def delete_character_endpoint(character_id: int):
         }
 
 
-@app.post("/engines/register")
+@app.post("/registry/register")
 async def register_engine(engine_payload: EnginePayload):
     registration = EngineRegistration(engine_payload.ruleset, engine_payload.url, True)
     app.state.registry.register(registration)
     app.state.logger(f'Registered {engine_payload.ruleset} to url {engine_payload.url}')
     return {"registered": True}
+
+
+@app.get("/registry/{engine_key}")
+async def get_engine(engine_key: str):
+    engine = app.state.registry.resolve(engine_key)
+    return engine
 
 
 @app.get("/health")

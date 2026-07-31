@@ -14,4 +14,5 @@ class Registry:
         self._engines[engine.ruleset] = engine
 
     def resolve(self, ruleset):
-        return self._engines[ruleset]
+        engine = self._engines[ruleset]
+        return {'url': engine.url, 'healthy': engine.healthy}
