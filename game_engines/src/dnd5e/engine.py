@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from game_engines.system_base import RolePlayingSystem, CharacterVariant
+from src.system_base import RolePlayingSystem, CharacterVariant
 
 from .character_sheet import Dnd5ECharacterSheet
 from .constants import Ability, Skill, ProficiencyLevel, CHECK_MODS, SKILLS_TO_ABILITIES

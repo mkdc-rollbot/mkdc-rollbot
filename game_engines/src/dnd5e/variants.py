@@ -1,6 +1,6 @@
 from typing import Any
 
-from game_engines.system_base import CharacterVariant
+from src.system_base import CharacterVariant
 from .constants import SCHEMA
 
 class Dnd5ECharacterVariant(CharacterVariant):

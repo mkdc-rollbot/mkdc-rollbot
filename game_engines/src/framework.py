@@ -1,7 +1,7 @@
 import logging
 
 from contextlib import asynccontextmanager
-from game_engines.system_base import RolePlayingSystem
+from src.system_base import RolePlayingSystem
 from fastapi import FastAPI
 
 def initialize_logger(engine):

@@ -1,6 +1,6 @@
 from typing import Any
 
-from game_engines.system_base import CharacterSheet
+from src.system_base import CharacterSheet
 
 from .constants import Ability, Skill, ProficiencyLevel, CHECK_MODS, SKILLS_TO_ABILITIES
 from .variants import Dnd5ECharacterVariant
