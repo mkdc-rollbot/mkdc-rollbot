@@ -1,7 +1,7 @@
 from datetime import datetime
 from sqlalchemy import select
 
-from db.models import Character, ChannelCharacter, CharacterVariant
+from src.db.models import Character, ChannelCharacter, CharacterVariant
 
 def get_character(session, character_id):
     return session.get(Character, character_id)

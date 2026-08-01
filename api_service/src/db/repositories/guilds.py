@@ -1,4 +1,4 @@
-from db.models import Guild
+from src.db.models import Guild
 
 def get_or_create_guild(session, guild_id):
     guild = session.get(Guild, guild_id)

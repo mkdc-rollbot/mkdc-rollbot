@@ -5,20 +5,20 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from models import CharacterPayload, ChannelPayload, ChannelSettingsPayload, EnginePayload
-from registry import Registry, EngineRegistration
+from src.models import CharacterPayload, ChannelPayload, ChannelSettingsPayload, EnginePayload
+from src.registry import Registry, EngineRegistration
 
-from db.session import SessionLocal, engine
-from db.models import Base
-from db.models import Channel as ChannelModel
-from db.models import Character as CharacterModel
-from db.models import Guild as GuildModel
+from src.db.session import SessionLocal, engine
+from src.db.models import Base
+from src.db.models import Channel as ChannelModel
+from src.db.models import Character as CharacterModel
+from src.db.models import Guild as GuildModel
 
-from db.repositories.guilds import get_or_create_guild
-from db.repositories.channels import get_or_create_channel, update_channel_settings, get_channel
-from db.repositories.characters import create_character as create_character_db
-from db.repositories.characters import set_character_to_channel, get_character, get_channel_characters, delete_character
-from db.repositories.players import get_or_create_player
+from src.db.repositories.guilds import get_or_create_guild
+from src.db.repositories.channels import get_or_create_channel, update_channel_settings, get_channel
+from src.db.repositories.characters import create_character as create_character_db
+from src.db.repositories.characters import set_character_to_channel, get_character, get_channel_characters, delete_character
+from src.db.repositories.players import get_or_create_player
 
 
 def initialize_logger():
