@@ -6,7 +6,7 @@ from types import MappingProxyType
 # CONSTANTS
 ############################################
 
-class SkillModifier(Flag):
+class ProficiencyLevel(Flag):
     PROFICIENCY = auto()
     EXPERTISE = auto()
 

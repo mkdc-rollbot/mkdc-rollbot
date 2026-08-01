@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from fastapi import FastAPI
 from typing import Any
 
 
@@ -50,11 +51,7 @@ class RolePlayingSystem(ABC):
     This class encapsulates role-playing systems: Character sheets structure and Check handling.
     """
     @abstractmethod
-    def character_sheet(self, args_list: list[str]) -> (CharacterSheet, str):
-        ...
-
-    @abstractmethod
-    def parse(self, *args):
+    def register_routes(self, app: FastAPI) -> FastAPI:
         ...
 
     @abstractmethod
@@ -62,5 +59,9 @@ class RolePlayingSystem(ABC):
         ...
 
     @abstractmethod
-    def key(self) ->str:
+    def key(self) -> str:
+        ...
+
+    @abstractmethod
+    def metadata(self) -> dict:
         ...

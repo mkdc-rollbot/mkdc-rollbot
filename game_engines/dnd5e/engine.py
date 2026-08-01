@@ -1,26 +1,25 @@
+from fastapi import FastAPI
+
 from game_engines.system_base import RolePlayingSystem, CharacterVariant
 
 from .character_sheet import Dnd5ECharacterSheet
-from .constants import Ability, Skill, SkillModifier, CHECK_MODS, SKILLS_TO_ABILITIES
+from .constants import Ability, Skill, ProficiencyLevel, CHECK_MODS, SKILLS_TO_ABILITIES
+from .models import CharacterSheetPayload
 
 class Dnd5e(RolePlayingSystem):
-    EXP = 'EXPERTISE'
+    def create_character(self, character: CharacterSheetPayload) -> Dnd5ECharacterSheet:
+        return Dnd5ECharacterSheet(character)
 
-    def check(self, character: Dnd5ECharacterSheet, skill: str, check_str: str = None) -> int:
-        ...
+    def register_routes(self, app: FastAPI):
+        @app.post('/character/create')
+        async def create_character(character: CharacterSheetPayload):
+            try:
+                self.create_character(character)
+                return {"status": 200}
+            except Exception:
+                return {"status": 500}
 
-    def character_sheet(self, args_list: list[str]) -> (Dnd5ECharacterSheet, str):
-        name = args_list.pop(0)
-        level = int(args_list.pop(0))
-        abilities = [int(ability) for abilitie in args_list[0:len(Ability)]]
-        proficiencies = [prof for prof in args_list[len(Ability): args_list.index(self.EXP) if self.EXP in args_list else len(args_list)]]
-        expertise = None
-        if self.EXP in args_list:
-            expertise = args_list[args_list.index(self.EXP)+1:]
-        return Dnd5ECharacterSheet(name, level, abilities, proficiencies, expertise), name
-
-    def parse(self, message: str):
-        ...
+        return app
 
     def __str__(self) -> str:
         return 'Dungeons and Dragons 5th Edition (2014)'
@@ -30,4 +29,8 @@ class Dnd5e(RolePlayingSystem):
 
     def metadata(self):
         return {'key': self.key(),
-                'name': str(self)}
+                'name': str(self),
+                'commands': [
+
+                    ]
+                }
