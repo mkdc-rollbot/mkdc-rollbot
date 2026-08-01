@@ -1,4 +1,5 @@
-from .framework import create_app
-from dnd5e import Dnd5E
+from game_engines.framework import create_app
+from game_engines.dnd5e.engine import Dnd5e
 
-app = create_app(Dnd5E())
+engine = Dnd5e()
+app = create_app(engine)

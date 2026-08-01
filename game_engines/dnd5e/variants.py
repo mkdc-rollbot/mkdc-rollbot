@@ -1,6 +1,6 @@
 from typing import Any
 
-from .system_base import CharacterVariant
+from game_engines.system_base import CharacterVariant
 
 class Dnd5ECharacterVariant(CharacterVariant):
     def validate_diffs(self, diffs: dict[str, Any]):

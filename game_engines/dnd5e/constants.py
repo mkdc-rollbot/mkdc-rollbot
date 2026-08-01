@@ -29,7 +29,7 @@ class Ability(Enum):
     CHA = 'cha'
 
     @classmethod
-    def from_str(cls, value: str) -> Ability:
+    def from_str(cls, value: str) -> "Ability":
         return cls(value)
 
 class Skill(Enum):
@@ -53,7 +53,7 @@ class Skill(Enum):
     SURVIVAL = 'survival'
 
     @classmethod
-    def from_str(cls, value: str) -> Skill:
+    def from_str(cls, value: str) -> "Skill":
         return cls(value)
 
 SKILLS_TO_ABILITIES: Mapping[Skill, Ability] = MappingProxyType({

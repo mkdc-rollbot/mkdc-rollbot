@@ -1,4 +1,4 @@
-from system_base import RolePlayingSystem
+from game_engines.system_base import RolePlayingSystem
 from fastapi import FastAPI
 
 def create_app(engine: RolePlayingSystem):

@@ -1,8 +1,9 @@
 from typing import Any
 
-from .system_base import CharacterSheet
+from game_engines.system_base import CharacterSheet
 
-from constants import Ability, Skill, SkillModifier, CHECK_MODS, SKILLS_TO_ABILITIES
+from .constants import Ability, Skill, SkillModifier, CHECK_MODS, SKILLS_TO_ABILITIES
+from .variants import Dnd5ECharacterVariant
 
 ############################################
 # UTILITY CLASSES
@@ -29,7 +30,6 @@ class CharacterSkill:
             if SkillModifier.EXPERTISE in self.modifier:
                 prof_multiplier += 1
         return self.ability.modifier + (prof_bonus * prof_multiplier)
-
 
 
 class Dnd5ECharacterSheet(CharacterSheet):
