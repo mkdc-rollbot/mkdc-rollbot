@@ -5,12 +5,10 @@ from collections import namedtuple
 
 from src.channel_settings import ChannelSettings
 from src.api_client import APIClient
-from src.dummy_system import DummySystem
-from src.dnd5e import Dnd5e
 
 Command = namedtuple('Command', ['description', 'function'])
 
-SYSTEMS = {'dnd5e': Dnd5e, 'dummy': DummySystem}
+SYSTEMS = []
 
 
 def initialize_logger():
@@ -30,7 +28,7 @@ class DiscordBot:
         self._commands: dict[str: Command] = {
             'prefix': Command(f'Changes assigned prefix. default is {ChannelSettings.DEFAULT_PREFIX}.', self.set_prefix),
             'help': Command('Get available commands.', self.help_str),
-            'system': Command(f'Set the roleplaying system for this channel. Available systems are: {"\n\t".join(SYSTEMS.keys())}', self.set_system),
+            'system': Command(f'Set the roleplaying system for this channel. Available systems are: none', self.set_system),
             'character': Command('Create character sheet', self.create_character),
             'my_character': Command('Print your character sheet', self.my_character),
             'check': Command('Performs a skill check', self.check)

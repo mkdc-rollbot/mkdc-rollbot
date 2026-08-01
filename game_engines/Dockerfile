@@ -8,4 +8,4 @@ RUN pip install -r requirements.txt
 
 COPY . .
 
-CMD ["uvicorn", "src.dnd5e.service:app", "--host", "0.0.0.0", "--port", "11039"]
+ENTRYPOINT ["uvicorn"]
