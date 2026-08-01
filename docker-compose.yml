@@ -96,9 +96,14 @@ services:
       - --port
       - "11039"
 
+    container_name: dnd5e
     depends_on:
       registry:
         condition: service_healthy
+
+
+    ports:
+      - "11039:11039"
 
   frontend:
     build:
