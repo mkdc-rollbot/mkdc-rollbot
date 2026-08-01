@@ -10,7 +10,7 @@ class Dnd5e(RolePlayingSystem):
     def character_sheet(self, args_list: list[str]) -> (Dnd5ECharacterSheet, str):
         name = args_list.pop(0)
         level = int(args_list.pop(0))
-        abilities = [int(ability) for abilities in args_list[0:len(Ability)]]
+        abilities = [int(ability) for abilitie in args_list[0:len(Ability)]]
         proficiencies = [prof for prof in args_list[len(Ability): args_list.index(self.EXP) if self.EXP in args_list else len(args_list)]]
         expertise = None
         if self.EXP in args_list:

@@ -1,4 +1,4 @@
-from typing import Any, Mapping
+from typing import Any
 
 from .system_base import CharacterSheet
 
@@ -38,7 +38,7 @@ class Dnd5ECharacterSheet(CharacterSheet):
         self._abilities = {ability: CharacterAbility(score) for ability, score in zip(Ability, ability_scores)}
         self.name: str = name
         self.level: int = level
-        modifiers: Mapping[Skill, SkillModifier] = {skill: SkillModifier(0) for skill in Skills}
+        modifiers: dict[Skill, SkillModifier] = {skill: SkillModifier(0) for skill in Skill}
         for skill in proficiencies:
             modifiers[skill] |= SkillModifier.PROFICIENCY
         if expertise:
@@ -52,16 +52,14 @@ class Dnd5ECharacterSheet(CharacterSheet):
         return 2 + (self.level - 1) // 4
 
     def skill_score(self, skill):
-        assert skill in Skills 
+        assert skill in Skill 
         return self._skills[skill].score(self.proficiency_modifier)
 
     @classmethod
     def from_json(cls, json: dict[str, Any]):
         name = json['name']
         level = json['level']
-        abilities = []
-        for ability in json['abilities']:
-            abilities.append(json['abilities'][ability])
+        abilities = [json["abilities"][ability.value] for ability in Ability]
         skills = {}
         for skill in json['skills']:
             skills[skill] =int(json['skills'][skill])
@@ -91,7 +89,7 @@ class Dnd5ECharacterSheet(CharacterSheet):
     def to_json(self):
         json = {'name': self.name,
                 'level': self.level,
-                'abilities': {name: ability.score for name, ability in self._abilities.items()},
+                'abilities': {name: ability.value for name, ability in self._abilities.items()},
                 'skills': {name: skill.modifier.value for name, skill in self._skills.items()}
                 }
         return json
