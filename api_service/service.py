@@ -224,7 +224,7 @@ async def delete_character_endpoint(character_id: int):
 async def register_engine(engine_payload: EnginePayload):
     registration = EngineRegistration(engine_payload.ruleset, engine_payload.url, True)
     app.state.registry.register(registration)
-    app.state.logger(f'Registered {engine_payload.ruleset} to url {engine_payload.url}')
+    app.state.logger.info(f'Registered {engine_payload.ruleset} to url {engine_payload.url}')
     return {"registered": True}
 
 

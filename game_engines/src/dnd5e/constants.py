@@ -86,4 +86,5 @@ SCHEMA = {
     'level': int,
     'stats': {ability: int for ability in Ability},
     'skills': {skill: int for skill in Skill},
+    'saving_throws': {ability: int for ability in Ability}
 }

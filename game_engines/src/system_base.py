@@ -50,6 +50,9 @@ class RolePlayingSystem(ABC):
     """
     This class encapsulates role-playing systems: Character sheets structure and Check handling.
     """
+    def __init__(self, url: str):
+        self.url = url
+
     @abstractmethod
     def register_routes(self, app: FastAPI) -> FastAPI:
         ...

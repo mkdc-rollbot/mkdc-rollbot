@@ -1,7 +1,10 @@
 import logging
+import os
 
 from contextlib import asynccontextmanager
 from src.system_base import RolePlayingSystem
+from src.shared.clients.registry import RegistryClient
+from src.shared.models import EngineRegistrationPayload
 from fastapi import FastAPI
 
 def initialize_logger(engine):
@@ -22,6 +25,11 @@ def create_lifespan(engine: RolePlayingSystem):
         logger = initialize_logger(engine)
         app.state.logger = logger
         app.state.logger.info(f'{engine.key()} game engine up')
+
+        reg_client = RegistryClient(os.getenv('REGISTRY_URL'))
+        registration = EngineRegistrationPayload(ruleset=engine.key(), url=engine.url)
+        await reg_client.register(registration)
+        app.state.logger.info('Registered!')
 
         yield
         # On Teardown
