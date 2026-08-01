@@ -21,7 +21,7 @@ def create_lifespan(engine: RolePlayingSystem):
         # On Load
         logger = initialize_logger(engine)
         app.state.logger = logger
-        app.state.logger.info('App up!')
+        app.state.logger.info(f'{engine.key()} game engine up')
 
         yield
         # On Teardown

@@ -31,6 +31,7 @@ class Dnd5e(RolePlayingSystem):
         return {'key': self.key(),
                 'name': str(self),
                 'commands': [
-
+                        {'id': 'character.create',
+                         'endpoint': '/character/create'}
                     ]
                 }
