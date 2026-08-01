@@ -68,8 +68,27 @@ services:
 
     restart: unless-stopped
 
+  registry:
+    build: ./registry
+
+    container_name: registry
+
+    depends_on:
+      api_service:
+        condition: service_healthy
+
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:11036/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+    ports:
+      - "11036:11036"
+
   dnd5e:
-    build: game_engines
+    build: ./game_engines
     command:
       - src.dnd5e.service:app
       - --host
@@ -78,7 +97,7 @@ services:
       - "11039"
 
     depends_on:
-      api_service:
+      registry:
         condition: service_healthy
 
   frontend:
