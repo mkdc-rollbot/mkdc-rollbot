@@ -29,7 +29,7 @@ class Dnd5e(RolePlayingSystem):
 
         @app.get('/roll/{notation}')
         async def roll(notation: str):
-            return self.roll_check(notation)
+            return await self.roll(notation)
 
         return app
 
@@ -48,14 +48,19 @@ class Dnd5e(RolePlayingSystem):
                     ]
                 }
 
-    def roll_check(self, mod: str | None = None):
-        if mod and mod not in CHECK_MODS:
-            raise ValueError(f'Invalid check mod {mod}')
+    async def roll(self, notation: str):
         if not self.dice_client:
             raise Exception('No dice client set yet')
+        
+        response = await self.dice_client.roll(notation)
+        return response
+
+    async def roll_check(self, mod: str | None = None):
+        if mod and mod not in CHECK_MODS:
+            raise ValueError(f'Invalid check mod {mod}')
+
         mod = '' if not mod else mod
         mod = CHECK_MODS.get(mod, Dnd5eCheckMod.NONE)
         notation = self.CHECK_ROLLS[mod]
 
-        response = self.dice_client.roll(notation)
-        return response
+        return await self.roll(notation)
