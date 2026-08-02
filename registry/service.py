@@ -1,8 +1,11 @@
 import logging
+import os
 import uvicorn
 
 from contextlib import asynccontextmanager
+from dotenv import load_dotenv
 from fastapi import FastAPI
+from httpx import AsyncClient
 
 from registry import Registry, EngineRegistration
 from models import EnginePayload
@@ -22,6 +25,7 @@ def initialize_logger():
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # On Load
+    load_dotenv()
     logger = initialize_logger()
     app.state.logger = logger
 
@@ -41,7 +45,12 @@ async def register_engine(engine_payload: EnginePayload):
     registration = EngineRegistration(engine_payload.ruleset, engine_payload.url, True)
     app.state.registry.register(registration)
     app.state.logger.info(f'Registered {engine_payload.ruleset} to url {engine_payload.url}')
-    return {"registered": True}
+
+    client = AsyncClient(timeout=10)
+    response = await client.get(f'{os.getenv('API_URL')}/metadata/services')
+    response.raise_for_status()
+    data = response.json()
+    return {"registered": True, 'api_url': os.getenv('API_URL'), 'data': data}
 
 
 @app.get("/registry/{engine_key}")

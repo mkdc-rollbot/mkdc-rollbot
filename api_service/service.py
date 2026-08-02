@@ -1,4 +1,5 @@
 import logging
+import os
 import uvicorn
 
 from contextlib import asynccontextmanager
@@ -7,12 +8,14 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from src.models import CharacterPayload, ChannelPayload, ChannelSettingsPayload, EnginePayload
 
+# Should be moved out to repository services
 from src.db.session import SessionLocal, engine
 from src.db.models import Base
 from src.db.models import Channel as ChannelModel
 from src.db.models import Character as CharacterModel
 from src.db.models import Guild as GuildModel
 
+# Should be replaced with repository clients
 from src.db.repositories.guilds import get_or_create_guild
 from src.db.repositories.channels import get_or_create_channel, update_channel_settings, get_channel
 from src.db.repositories.characters import create_character as create_character_db
@@ -58,7 +61,6 @@ app.add_middleware(
         allow_headers=["*"],
         )
 
-
 @app.post("/channel/")
 async def create_guild_and_channel(channel_payload: ChannelPayload):
     guild_id = channel_payload.guild_id
@@ -94,7 +96,6 @@ async def create_character(character_payload: CharacterPayload):
         session.commit()
     return {"status": "OK", "character_id": char_id}
 
-
 @app.put("/channel/")
 async def update_channel(channel_payload: ChannelSettingsPayload):
     channel_id = channel_payload.channel_id
@@ -106,7 +107,6 @@ async def update_channel(channel_payload: ChannelSettingsPayload):
         session.commit()
     return {}
 
-
 @app.get("/characters/{channel_id}")
 async def get_characters(channel_id: str):
     with SessionLocal() as session:
@@ -114,7 +114,6 @@ async def get_characters(channel_id: str):
         characters = [{"id": character.id, "player": character.player.id, "name": character.name, "sheet_data": character.sheet_data} for character in db_characters]
     app.state.logger.info(characters)
     return characters
-
 
 @app.get("/guilds")
 async def get_guilds():
@@ -214,6 +213,10 @@ async def delete_character_endpoint(character_id: int):
         return {
             "deleted": success
         }
+
+@app.get("/metadata/services")
+async def get_services():
+    return {'repositories': [], 'registry_url': os.getenv('REGISTRY_URL'), 'dice_roller_url': os.getenv('DICE_ROLLER_URL')}
 
 @app.get("/health")
 async def health():

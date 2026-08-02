@@ -2,6 +2,8 @@ from abc import ABC, abstractmethod
 from fastapi import FastAPI
 from typing import Any
 
+from src.shared.clients.base_client import BaseClient
+
 
 class CharacterVariant(ABC):
     """
@@ -52,6 +54,10 @@ class RolePlayingSystem(ABC):
     """
     def __init__(self, url: str):
         self.url = url
+        self.dice_client = None
+
+    def set_dice_client(self, client: BaseClient):
+        self.dice_client = client
 
     @abstractmethod
     def register_routes(self, app: FastAPI) -> FastAPI:

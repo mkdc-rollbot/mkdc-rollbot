@@ -1,12 +1,20 @@
 from fastapi import FastAPI
+from types import MappingProxyType
+from typing import Mapping
 
 from src.system_base import RolePlayingSystem, CharacterVariant
 
 from .character_sheet import Dnd5ECharacterSheet
-from .constants import Ability, Skill, ProficiencyLevel, CHECK_MODS, SKILLS_TO_ABILITIES
+from .constants import Ability, Skill, ProficiencyLevel, Dnd5eCheckMod, CHECK_MODS, SKILLS_TO_ABILITIES
 from .models import CharacterSheetPayload
 
 class Dnd5e(RolePlayingSystem):
+    CHECK_ROLLS: Mapping[Dnd5eCheckMod, str] = MappingProxyType({
+        Dnd5eCheckMod.NONE: '1d20',
+        Dnd5eCheckMod.ADVANTAGE: '2d20kh1',
+        Dnd5eCheckMod.DISADVANTAGE: '2d20kl1'
+        })
+
     def create_character(self, character: CharacterSheetPayload) -> Dnd5ECharacterSheet:
         return Dnd5ECharacterSheet(character)
 
@@ -18,6 +26,10 @@ class Dnd5e(RolePlayingSystem):
                 return {"status": 200}
             except Exception:
                 return {"status": 500}
+
+        @app.get('/roll/{notation}')
+        async def roll(notation: str):
+            return self.roll_check(notation)
 
         return app
 
@@ -35,3 +47,15 @@ class Dnd5e(RolePlayingSystem):
                          'endpoint': '/character/create'}
                     ]
                 }
+
+    def roll_check(self, mod: str | None = None):
+        if mod and mod not in CHECK_MODS:
+            raise ValueError(f'Invalid check mod {mod}')
+        if not self.dice_client:
+            raise Exception('No dice client set yet')
+        mod = '' if not mod else mod
+        mod = CHECK_MODS.get(mod, Dnd5eCheckMod.NONE)
+        notation = self.CHECK_ROLLS[mod]
+
+        response = self.dice_client.roll(notation)
+        return response
